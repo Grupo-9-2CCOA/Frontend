@@ -139,3 +139,128 @@ html, body, #root {
   font-size: 48px;
   color: #bc500a;
 }
+
+.page-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 180px;
+  min-width: 180px;
+  background-color: #fff;
+  border-right: 1px solid #f0e8e8;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-logo {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #bc500a;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0d0d0;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar nav a {
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  color: #444;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.sidebar nav a:hover {
+  background-color: #fff0f0;
+  color: #bc500a;
+}
+
+.page-main {
+  flex: 1;
+  padding: 32px;
+  background-color: #fff9fc;
+}
+
+.page-title {
+  font-family: "Playfair Display", serif;
+  font-size: 24px;
+  color: #bc500a;
+  margin-bottom: 24px;
+}
+
+.form-section {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.form-section h3 {
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  color: #bc500a;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.textarea {
+  height: 80px;
+  resize: vertical;
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancelar {
+  background-color: #c10e0e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-cancelar:hover {
+  background-color: #7e1111;
+}
