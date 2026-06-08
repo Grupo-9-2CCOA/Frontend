@@ -147,8 +147,8 @@ html, body, #root {
 }
 
 .sidebar {
-  width: 180px;
-  min-width: 180px;
+  width: 220px;
+  min-width: 220px;
   background-color: #fff;
   border-right: 1px solid #f0e8e8;
   padding: 24px 16px;
@@ -160,13 +160,18 @@ html, body, #root {
 .sidebar-logo {
   font-family: "Poppins", sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #bc500a;
 }
 
 .sidebar-user {
   display: flex;
   align-items: center;
+  justify-content: start;
+  padding: 0px 12px;
   gap: 8px;
   font-family: "Poppins", sans-serif;
   font-size: 13px;
@@ -202,7 +207,7 @@ html, body, #root {
 .page-main {
   flex: 1;
   padding: 32px;
-  background-color: #fff9fc;
+  background-color: #fdeef6;
 }
 
 .page-title {
@@ -213,7 +218,7 @@ html, body, #root {
 }
 
 .form-section {
-  background-color: #fff;
+  background-color: #fff6fa;
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 24px;
@@ -238,8 +243,8 @@ html, body, #root {
 
 .textarea {
   height: 80px;
-  resize: vertical;
   width: 100%;
+  padding: 2px;
 }
 
 .form-actions {
@@ -263,4 +268,14 @@ html, body, #root {
 
 .btn-cancelar:hover {
   background-color: #7e1111;
+}
+
+.assignment-text{
+  display: flex;
+  gap: 10px;
+}
+
+.sidebar-icon-text{
+  display: flex;
+  gap: 10px;
 }
