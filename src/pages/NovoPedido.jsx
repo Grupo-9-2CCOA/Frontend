@@ -37,7 +37,7 @@ function NovoPedido() {
                     </span> Identificação do Pedido</h3>
                     <div className='form-grid'>
                         <div className='form-field-component'>
-                            <p className='form-field'>Produto</p>
+                            <p className='form-field'>Pedido</p>
                             <input className='input' type='text' />
                         </div>
                         <div className='form-field-component'>
@@ -53,7 +53,7 @@ function NovoPedido() {
                             <input className='input' type='text' />
                         </div>
                         <div className='form-field-component full-width'>
-                            <p className='form-field'>Descrição</p>
+                            <p className='form-field'>Detalhes</p>
                             <textarea className='input textarea' />
                         </div>
                     </div>
