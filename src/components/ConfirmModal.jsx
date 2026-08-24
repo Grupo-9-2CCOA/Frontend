@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function ConfirmModal({ open, title, message, onCancel, onConfirm }) {
+export default function ConfirmModal({ open, title, message, onCancel, onConfirm, error }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -18,6 +18,13 @@ export default function ConfirmModal({ open, title, message, onCancel, onConfirm
         <button type='button' className='modal-close' aria-label='Fechar' onClick={onCancel}>×</button>
         <h3 className='modal-title confirm-title'>{title}</h3>
         <p className='confirm-message'>{message}</p>
+
+        {error && (
+          <div className='modal-error' role='alert' style={{ marginTop: 12, marginBottom: 12 }}>
+            {error}
+          </div>
+        )}
+
         <div className='confirm-actions'>
           <button type='button' className='btn-secondary' onClick={onCancel} aria-label='Cancelar'>Cancelar</button>
           <button type='button' className='btn-primary' data-confirm onClick={onConfirm} aria-label='Confirmar'>Confirmar</button>

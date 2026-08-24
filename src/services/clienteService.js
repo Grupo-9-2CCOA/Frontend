@@ -221,12 +221,34 @@ export async function deleteEndereco(id) {
 
   const res = await fetch(`${BASE}/enderecos/${encodeURIComponent(enderecoId)}`, { method: 'DELETE' });
   if (res.status === 200 || res.status === 204) return true;
+
+  let parsed = null;
+  try {
+    parsed = await res.json();
+  } catch (_e) {
+    // ignore non-JSON responses
+  }
+
   if (res.status === 404) {
-    const err = new Error('Endereço não encontrado');
+    const err = new Error(parsed?.mensagem || 'Endereço não encontrado');
     err.status = 404;
     throw err;
   }
-  const err = new Error('Erro ao excluir endereço');
+
+  if (res.status === 409) {
+    const err = new Error(parsed?.erro?.mensagem || parsed?.mensagem || 'Não foi possível excluir o endereço.');
+    err.status = 409;
+    err.details = parsed?.erro || parsed;
+    throw err;
+  }
+
+  if (res.status === 400) {
+    const err = new Error(parsed?.mensagem || parsed?.numero || 'Dados inválidos');
+    err.status = 400;
+    throw err;
+  }
+
+  const err = new Error(parsed?.mensagem || parsed?.erro?.mensagem || 'Erro ao excluir endereço');
   err.status = res.status;
   throw err;
 }
