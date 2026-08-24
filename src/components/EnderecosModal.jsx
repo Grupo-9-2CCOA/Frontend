@@ -63,7 +63,10 @@ export default function EnderecosModal({ open, cliente, onClose }) {
       setConfirmOpen(false);
       setToDelete(null);
     } catch (e) {
-      setDeleteError(e.message || 'Erro ao excluir endereço');
+      setDeleteError({
+        message: e.message || 'Erro ao excluir endereço',
+        pedidoIds: Array.isArray(e.pedidoIds) ? e.pedidoIds : [],
+      });
     }
   };
 

@@ -239,6 +239,11 @@ export async function deleteEndereco(id) {
     const err = new Error(parsed?.erro?.mensagem || parsed?.mensagem || 'Não foi possível excluir o endereço.');
     err.status = 409;
     err.details = parsed?.erro || parsed;
+    err.pedidoIds = Array.isArray(parsed?.erro?.pedidoIds)
+      ? parsed.erro.pedidoIds
+      : Array.isArray(parsed?.pedidoIds)
+        ? parsed.pedidoIds
+        : [];
     throw err;
   }
 
