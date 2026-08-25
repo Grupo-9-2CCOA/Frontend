@@ -26,7 +26,7 @@ npm -v
 Clone o repositório e entre na pasta do frontend:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/Grupo-9-2CCOA/Frontend.git
 cd frontend
 ```
 
