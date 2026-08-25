@@ -13,6 +13,7 @@ export default function EnderecosModal({ open, cliente, onClose }) {
   const [editingEndereco, setEditingEndereco] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
   const extractId = (en) => {
     if (!en) return undefined;
@@ -47,20 +48,31 @@ export default function EnderecosModal({ open, cliente, onClose }) {
   };
 
   const handleDeleteRequest = (endereco) => {
+    setDeleteError(null);
     setToDelete(endereco);
     setConfirmOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!toDelete) return;
+    setDeleteError(null);
+
     try {
       await deleteEndereco(extractId(toDelete));
       setEnderecos((prev) => prev.filter((e) => extractId(e) !== extractId(toDelete)));
-    } catch (e) {
-      alert(e.message || 'Erro ao excluir endereço');
-    } finally {
       setConfirmOpen(false);
       setToDelete(null);
+    } catch (e) {
+      const pedidoIds = Array.isArray(e?.pedidoIds)
+        ? e.pedidoIds
+        : Array.isArray(e?.details?.pedidoIds)
+          ? e.details.pedidoIds
+          : [];
+
+      setDeleteError({
+        message: e?.message || 'Erro ao excluir endereço',
+        pedidoIds,
+      });
     }
   };
 
@@ -169,9 +181,11 @@ export default function EnderecosModal({ open, cliente, onClose }) {
         open={confirmOpen}
         title='Confirmar deleção'
         message={toDelete ? `Deseja prosseguir com a exclusão do endereço ${toDelete.logradouro}?` : ''}
+        error={deleteError}
         onCancel={() => {
           setConfirmOpen(false);
           setToDelete(null);
+          setDeleteError(null);
         }}
         onConfirm={confirmDelete}
       />
