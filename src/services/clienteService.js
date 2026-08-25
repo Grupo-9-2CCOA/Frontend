@@ -236,19 +236,16 @@ export async function deleteEndereco(id) {
   }
 
   if (res.status === 409) {
-    const err = new Error(parsed?.erro?.mensagem || parsed?.mensagem || 'Não foi possível excluir o endereço.');
+    const erro = parsed?.erro || parsed || {};
+    const err = new Error(erro?.mensagem || 'Não foi possível excluir o endereço.');
     err.status = 409;
-    err.details = parsed?.erro || parsed;
-    err.pedidoIds = Array.isArray(parsed?.erro?.pedidoIds)
-      ? parsed.erro.pedidoIds
-      : Array.isArray(parsed?.pedidoIds)
-        ? parsed.pedidoIds
-        : [];
+    err.details = erro;
+    err.pedidoIds = Array.isArray(erro?.pedidoIds) ? erro.pedidoIds : [];
     throw err;
   }
 
   if (res.status === 400) {
-    const err = new Error(parsed?.mensagem || parsed?.numero || 'Dados inválidos');
+    const err = new Error(parsed?.mensagem || parsed?.numero || parsed?.logradouro || 'Dados inválidos');
     err.status = 400;
     throw err;
   }

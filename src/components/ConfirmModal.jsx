@@ -22,11 +22,21 @@ export default function ConfirmModal({ open, title, message, onCancel, onConfirm
         {error && (
           <div className='modal-error' role='alert' style={{ marginTop: 12, marginBottom: 12 }}>
             <div>{typeof error === 'string' ? error : error.message}</div>
-            {typeof error !== 'string' && Array.isArray(error.pedidoIds) && error.pedidoIds.length > 0 && (
-              <div style={{ marginTop: 8 }}>
-                <strong>Pedidos bloqueadores:</strong> {error.pedidoIds.join(', ')}
-              </div>
-            )}
+            {(() => {
+              const pedidoIds = typeof error === 'string'
+                ? []
+                : Array.isArray(error.pedidoIds)
+                  ? error.pedidoIds
+                  : Array.isArray(error.details?.pedidoIds)
+                    ? error.details.pedidoIds
+                    : [];
+
+              return pedidoIds.length > 0 ? (
+                <div style={{ marginTop: 8 }}>
+                  <strong>Pedidos bloqueadores:</strong> {pedidoIds.join(', ')}
+                </div>
+              ) : null;
+            })()}
           </div>
         )}
 
