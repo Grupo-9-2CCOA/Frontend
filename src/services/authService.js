@@ -20,3 +20,26 @@ export async function login(usuario, senha) {
   erro.status = resposta.status
   throw erro
 }
+
+export async function trocarSenha(senha) {
+  const resposta = await fetch(`${BASE}/admin/trocar-senha`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ senha }),
+  })
+
+  if (resposta.ok) return
+
+  let mensagem = 'Não foi possível trocar a senha. Tente novamente.'
+  try {
+    const corpo = await resposta.json()
+    mensagem = corpo.mensagem || corpo.message || mensagem
+  } catch {
+    // Mantém a mensagem padrão quando o backend não retorna JSON.
+  }
+
+  const erro = new Error(mensagem)
+  erro.status = resposta.status
+  throw erro
+}
