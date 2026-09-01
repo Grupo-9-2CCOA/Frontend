@@ -123,6 +123,14 @@ html, body, #root {
   text-decoration: underline;
 }
 
+.login-error {
+  width: 100%;
+  margin: -6px 0 16px;
+  color: #c10e0e;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+}
+
 .form-content > button,
 .form-content .button-wrapper {
   width: 100%;
