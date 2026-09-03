@@ -61,6 +61,7 @@ function PedidosList() {
   const [erro, setErro] = useState('')
   const [novoPedidoAberto, setNovoPedidoAberto] = useState(false)
   const [mensagemSucesso, setMensagemSucesso] = useState('')
+  const [avisoCadastro, setAvisoCadastro] = useState('')
   const [atualizacaoLista, setAtualizacaoLista] = useState(0)
 
   useEffect(() => {
@@ -116,6 +117,7 @@ function PedidosList() {
     setCarregando(true)
     setErro('')
     setMensagemSucesso('')
+    setAvisoCadastro('')
     setPedidoSelecionado(null)
     setDataSelecionada(dataFormatada)
   }
@@ -125,8 +127,19 @@ function PedidosList() {
     setCarregando(true)
     setErro('')
     setMensagemSucesso('')
+    setAvisoCadastro('')
     setPedidoSelecionado(null)
     setDataSelecionada(null)
+  }
+
+  const abrirNovoPedido = () => {
+    if (dataSelecionada < hojeFormatado) {
+      setAvisoCadastro('Não é possível cadastrar um pedido em uma data anterior a hoje.')
+      return
+    }
+
+    setAvisoCadastro('')
+    setNovoPedidoAberto(true)
   }
 
   const pedidoCriado = () => {
@@ -177,7 +190,7 @@ function PedidosList() {
 
           <div className='pedidos-acoes-cabecalho'>
             {dataSelecionada && (
-              <button type='button' className='btn-novo-pedido' onClick={() => setNovoPedidoAberto(true)}>
+              <button type='button' className='btn-novo-pedido' onClick={abrirNovoPedido}>
                 + Novo pedido
               </button>
             )}
@@ -195,6 +208,7 @@ function PedidosList() {
         </header>
 
         {mensagemSucesso && <p className='pedidos-sucesso' role='status'>{mensagemSucesso}</p>}
+        {avisoCadastro && <p className='pedidos-aviso' role='alert'>{avisoCadastro}</p>}
 
         <section className='pedidos-tabela-painel'>
           {carregando && <p className='pedidos-mensagem'>Carregando pedidos...</p>}

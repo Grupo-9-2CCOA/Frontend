@@ -78,6 +78,17 @@
   font-weight: 600;
 }
 
+.pedidos-aviso {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid #e9b86a;
+  border-radius: 7px;
+  background: #fff3d9;
+  color: #8b5d00;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .pagamento-legenda {
   display: flex;
   align-items: center;
