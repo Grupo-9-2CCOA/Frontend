@@ -143,6 +143,7 @@
 .pedidos-inferior {
   display: grid;
   grid-template-columns: minmax(320px, 0.95fr) minmax(380px, 1.05fr);
+  align-items: start;
   gap: 24px;
   margin-top: 24px;
 }
