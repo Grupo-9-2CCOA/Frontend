@@ -30,3 +30,26 @@ export async function listarPedidosPorData(data) {
   erro.status = resposta.status
   throw erro
 }
+
+export async function criarPedido(payload) {
+  const resposta = await fetch(`${BASE}/pedidos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  })
+
+  if (resposta.status === 201) return resposta.json()
+
+  let mensagem = 'Não foi possível cadastrar o pedido.'
+  try {
+    const corpo = await resposta.json()
+    mensagem = corpo.mensagem || corpo.message || mensagem
+  } catch {
+    // Mantém a mensagem padrão quando o backend não retorna JSON.
+  }
+
+  const erro = new Error(mensagem)
+  erro.status = resposta.status
+  throw erro
+}
