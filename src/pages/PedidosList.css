@@ -29,6 +29,29 @@
   font-size: 14px;
 }
 
+.pedidos-acoes-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-proximos-pedidos {
+  padding: 10px 14px;
+  border: 1px solid #7a2947;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a2947;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-proximos-pedidos:hover {
+  background: #f3dfe4;
+}
+
 .pagamento-legenda {
   display: flex;
   align-items: center;
@@ -306,6 +329,11 @@
   .pagamento-legenda {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .pedidos-acoes-cabecalho {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .pedidos-main {
