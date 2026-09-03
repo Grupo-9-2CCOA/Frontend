@@ -4,6 +4,7 @@ import TrocaSenha from './pages/TrocaSenha'
 import NovoPedido from './pages/NovoPedido'
 import ClientesList from './pages/ClientesList'
 import ClienteDetail from './pages/ClienteDetail'
+import PedidosList from './pages/PedidosList'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/novo-pedido" element={<NovoPedido />} />
         <Route path="/clientes" element={<ClientesList />} />
         <Route path="/clientes/:id" element={<ClienteDetail />} />
+        <Route path="/pedidos" element={<PedidosList />} />
       </Routes>
     </BrowserRouter>
   )
