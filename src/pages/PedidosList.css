@@ -48,8 +48,34 @@
   cursor: pointer;
 }
 
+.btn-novo-pedido {
+  padding: 10px 16px;
+  border: 1px solid #7a2947;
+  border-radius: 8px;
+  background: #7a2947;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-novo-pedido:hover {
+  background: #612038;
+}
+
 .btn-proximos-pedidos:hover {
   background: #f3dfe4;
+}
+
+.pedidos-sucesso {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid #8dd7aa;
+  border-radius: 7px;
+  background: #e4f8eb;
+  color: #14723d;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .pagamento-legenda {
