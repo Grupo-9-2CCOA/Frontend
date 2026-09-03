@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listarPedidosPorData } from '../services/pedidoService'
+import { listarPedidos, listarPedidosPorData } from '../services/pedidoService'
 
 import '../App.css'
 import './PedidosList.css'
@@ -51,7 +51,8 @@ function classePagamento(estado = '') {
 
 function PedidosList() {
   const hoje = useMemo(() => new Date(), [])
-  const [dataSelecionada, setDataSelecionada] = useState(formatarDataApi(hoje))
+  const hojeFormatado = useMemo(() => formatarDataApi(hoje), [hoje])
+  const [dataSelecionada, setDataSelecionada] = useState(null)
   const [mesExibido, setMesExibido] = useState(new Date(hoje.getFullYear(), hoje.getMonth(), 1))
   const [pedidos, setPedidos] = useState([])
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null)
@@ -61,11 +62,22 @@ function PedidosList() {
   useEffect(() => {
     let requisicaoAtiva = true
 
-    listarPedidosPorData(dataSelecionada)
+    const consulta = dataSelecionada
+      ? listarPedidosPorData(dataSelecionada)
+      : listarPedidos()
+
+    consulta
       .then((dados) => {
         if (!requisicaoAtiva) return
-        setPedidos(dados)
-        setPedidoSelecionado(dados[0] || null)
+
+        const pedidosExibidos = dataSelecionada
+          ? dados
+          : dados
+              .filter((pedido) => pedido.dataPedido?.slice(0, 10) >= hojeFormatado)
+              .sort((pedidoA, pedidoB) => new Date(pedidoA.dataPedido) - new Date(pedidoB.dataPedido))
+
+        setPedidos(pedidosExibidos)
+        setPedidoSelecionado(pedidosExibidos[0] || null)
       })
       .catch((error) => {
         if (!requisicaoAtiva) return
@@ -80,7 +92,7 @@ function PedidosList() {
     return () => {
       requisicaoAtiva = false
     }
-  }, [dataSelecionada])
+  }, [dataSelecionada, hojeFormatado])
 
   const diasDoMes = useMemo(() => {
     const ano = mesExibido.getFullYear()
@@ -101,6 +113,14 @@ function PedidosList() {
     setErro('')
     setPedidoSelecionado(null)
     setDataSelecionada(dataFormatada)
+  }
+
+  const mostrarProximosPedidos = () => {
+    if (!dataSelecionada) return
+    setCarregando(true)
+    setErro('')
+    setPedidoSelecionado(null)
+    setDataSelecionada(null)
   }
 
   const mudarMes = (quantidade) => {
@@ -137,13 +157,24 @@ function PedidosList() {
         <header className='pedidos-header'>
           <div>
             <h1>Pedidos</h1>
-            <p>Pedidos de {formatarDataExibicao(`${dataSelecionada}T00:00:00`)}</p>
+            <p>
+              {dataSelecionada
+                ? `Pedidos de ${formatarDataExibicao(`${dataSelecionada}T00:00:00`)}`
+                : 'Próximos pedidos por data de entrega'}
+            </p>
           </div>
 
-          <div className='pagamento-legenda' aria-label='Legenda de pagamento'>
-            <span><i className='pagamento-ponto pago' /> Pago</span>
-            <span><i className='pagamento-ponto nao-pago' /> Pendente</span>
-            <span><i className='pagamento-ponto cancelado' /> Cancelado</span>
+          <div className='pedidos-acoes-cabecalho'>
+            {dataSelecionada && (
+              <button type='button' className='btn-proximos-pedidos' onClick={mostrarProximosPedidos}>
+                Ver próximos pedidos
+              </button>
+            )}
+            <div className='pagamento-legenda' aria-label='Legenda de pagamento'>
+              <span><i className='pagamento-ponto pago' /> Pago</span>
+              <span><i className='pagamento-ponto nao-pago' /> Pendente</span>
+              <span><i className='pagamento-ponto cancelado' /> Cancelado</span>
+            </div>
           </div>
         </header>
 
