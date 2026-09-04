@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { listarPedidos, listarPedidosPorData } from '../services/pedidoService'
+import { logout } from '../services/authService'
 import NovoPedidoModal from '../components/NovoPedidoModal'
 
 import '../App.css'
@@ -51,6 +52,7 @@ function classePagamento(estado = '') {
 }
 
 function PedidosList() {
+  const navigate = useNavigate()
   const hoje = useMemo(() => new Date(), [])
   const hojeFormatado = useMemo(() => formatarDataApi(hoje), [hoje])
   const [dataSelecionada, setDataSelecionada] = useState(null)
@@ -63,6 +65,7 @@ function PedidosList() {
   const [mensagemSucesso, setMensagemSucesso] = useState('')
   const [avisoCadastro, setAvisoCadastro] = useState('')
   const [atualizacaoLista, setAtualizacaoLista] = useState(0)
+  const [saindo, setSaindo] = useState(false)
 
   useEffect(() => {
     let requisicaoAtiva = true
@@ -147,6 +150,19 @@ function PedidosList() {
     setAtualizacaoLista((valorAtual) => valorAtual + 1)
   }
 
+  const handleLogout = async () => {
+    if (saindo) return
+    setSaindo(true)
+
+    try {
+      await logout()
+      navigate('/', { replace: true })
+    } catch (error) {
+      alert(error.message || 'Não foi possível sair.')
+      setSaindo(false)
+    }
+  }
+
   const mudarMes = (quantidade) => {
     setMesExibido((mesAtual) => new Date(
       mesAtual.getFullYear(),
@@ -175,6 +191,11 @@ function PedidosList() {
           <Link to='/clientes'><span className='material-symbols-outlined'>group</span> Clientes</Link>
           <a href='#'><span className='material-symbols-outlined'>settings_heart</span> Configurações</a>
         </nav>
+
+        <button type='button' className='sidebar-logout' onClick={handleLogout} disabled={saindo}>
+          <span className='material-symbols-outlined'>logout</span>
+          {saindo ? 'Saindo...' : 'Sair'}
+        </button>
       </aside>
 
       <main className='pedidos-main'>

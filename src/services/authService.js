@@ -43,3 +43,16 @@ export async function trocarSenha(senha) {
   erro.status = resposta.status
   throw erro
 }
+
+export async function logout() {
+  const resposta = await fetch(`${BASE}/admin/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (resposta.ok) return
+
+  const erro = new Error('Não foi possível sair. Tente novamente.')
+  erro.status = resposta.status
+  throw erro
+}

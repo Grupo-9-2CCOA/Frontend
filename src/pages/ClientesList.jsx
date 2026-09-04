@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { listClientes, inactivateCliente } from '../services/clienteService';
+import { logout } from '../services/authService';
 import ClienteTable from '../components/ClienteTable';
 import SearchToggle from '../components/SearchToggle';
 import ConfirmModal from '../components/ConfirmModal';
@@ -9,12 +11,26 @@ import { filterClientes } from '../utils/filterClientes';
 import '../App.css';
 
 export default function ClientesList() {
+  const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [saindo, setSaindo] = useState(false);
+
+  const handleLogout = async () => {
+    if (saindo) return;
+    setSaindo(true);
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch (e) {
+      alert(e.message || 'Não foi possível sair.');
+      setSaindo(false);
+    }
+  };
 
   const fetchList = async () => {
     setLoading(true);
@@ -97,11 +113,16 @@ export default function ClientesList() {
 
         <nav>
           <a href='#' className='sidebar-icon-text'><span className='material-symbols-outlined'>dashboard</span> Dashboard</a>
-          <a href='#' className='sidebar-icon-text'><span className='material-symbols-outlined'>shopping_bag</span> Pedidos</a>
+          <Link to='/pedidos' className='sidebar-icon-text'><span className='material-symbols-outlined'>shopping_bag</span> Pedidos</Link>
           <a href='#' className='sidebar-icon-text'><span className='material-symbols-outlined'>calendar_month</span> Calendário</a>
-          <a href='#' className='sidebar-icon-text active'><span className='material-symbols-outlined'>group</span> Clientes</a>
+          <Link to='/clientes' className='sidebar-icon-text active'><span className='material-symbols-outlined'>group</span> Clientes</Link>
           <a href='#' className='sidebar-icon-text'><span className='material-symbols-outlined'>settings_heart</span> Configurações</a>
         </nav>
+
+        <button type='button' className='sidebar-logout' onClick={handleLogout} disabled={saindo}>
+          <span className='material-symbols-outlined'>logout</span>
+          {saindo ? 'Saindo...' : 'Sair'}
+        </button>
       </aside>
 
       <main className='clientes-main'>

@@ -371,6 +371,35 @@ button, input {
   color: #bc500a;
 }
 
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #4a2c25;
+  font-size: 0.98rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sidebar-logout:hover {
+  background: #f0e0cf;
+}
+
+.sidebar-logout .material-symbols-outlined {
+  color: #bc500a;
+  font-size: 1.1rem;
+}
+
+.sidebar-logout:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .clientes-main {
   flex: 1;
   background: #fdeef6;
