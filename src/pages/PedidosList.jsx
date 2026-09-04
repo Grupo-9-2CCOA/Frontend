@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listarPedidos, listarPedidosPorData } from '../services/pedidoService'
+import NovoPedidoModal from '../components/NovoPedidoModal'
 
 import '../App.css'
 import './PedidosList.css'
@@ -58,6 +59,10 @@ function PedidosList() {
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [novoPedidoAberto, setNovoPedidoAberto] = useState(false)
+  const [mensagemSucesso, setMensagemSucesso] = useState('')
+  const [avisoCadastro, setAvisoCadastro] = useState('')
+  const [atualizacaoLista, setAtualizacaoLista] = useState(0)
 
   useEffect(() => {
     let requisicaoAtiva = true
@@ -92,7 +97,7 @@ function PedidosList() {
     return () => {
       requisicaoAtiva = false
     }
-  }, [dataSelecionada, hojeFormatado])
+  }, [dataSelecionada, hojeFormatado, atualizacaoLista])
 
   const diasDoMes = useMemo(() => {
     const ano = mesExibido.getFullYear()
@@ -111,6 +116,8 @@ function PedidosList() {
 
     setCarregando(true)
     setErro('')
+    setMensagemSucesso('')
+    setAvisoCadastro('')
     setPedidoSelecionado(null)
     setDataSelecionada(dataFormatada)
   }
@@ -119,8 +126,25 @@ function PedidosList() {
     if (!dataSelecionada) return
     setCarregando(true)
     setErro('')
+    setMensagemSucesso('')
+    setAvisoCadastro('')
     setPedidoSelecionado(null)
     setDataSelecionada(null)
+  }
+
+  const abrirNovoPedido = () => {
+    if (dataSelecionada < hojeFormatado) {
+      setAvisoCadastro('Não é possível cadastrar um pedido em uma data anterior a hoje.')
+      return
+    }
+
+    setAvisoCadastro('')
+    setNovoPedidoAberto(true)
+  }
+
+  const pedidoCriado = () => {
+    setMensagemSucesso('Pedido cadastrado com sucesso.')
+    setAtualizacaoLista((valorAtual) => valorAtual + 1)
   }
 
   const mudarMes = (quantidade) => {
@@ -166,6 +190,11 @@ function PedidosList() {
 
           <div className='pedidos-acoes-cabecalho'>
             {dataSelecionada && (
+              <button type='button' className='btn-novo-pedido' onClick={abrirNovoPedido}>
+                + Novo pedido
+              </button>
+            )}
+            {dataSelecionada && (
               <button type='button' className='btn-proximos-pedidos' onClick={mostrarProximosPedidos}>
                 Ver próximos pedidos
               </button>
@@ -177,6 +206,9 @@ function PedidosList() {
             </div>
           </div>
         </header>
+
+        {mensagemSucesso && <p className='pedidos-sucesso' role='status'>{mensagemSucesso}</p>}
+        {avisoCadastro && <p className='pedidos-aviso' role='alert'>{avisoCadastro}</p>}
 
         <section className='pedidos-tabela-painel'>
           {carregando && <p className='pedidos-mensagem'>Carregando pedidos...</p>}
@@ -281,6 +313,14 @@ function PedidosList() {
           </section>
         </div>
       </main>
+
+      {novoPedidoAberto && dataSelecionada && (
+        <NovoPedidoModal
+          dataSelecionada={dataSelecionada}
+          onClose={() => setNovoPedidoAberto(false)}
+          onCreated={pedidoCriado}
+        />
+      )}
     </div>
   )
 }
