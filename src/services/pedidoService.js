@@ -78,3 +78,26 @@ export async function cancelarPedido(id) {
   erro.status = resposta.status
   throw erro
 }
+
+export async function atualizarStatusPedido(id, status) {
+  const resposta = await fetch(`${BASE}/pedidos/${id}/status`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(status),
+  })
+
+  if (resposta.ok) return resposta.json()
+
+  let mensagem = 'Não foi possível atualizar os status do pedido.'
+  try {
+    const corpo = await resposta.json()
+    mensagem = corpo.mensagem || corpo.message || mensagem
+  } catch {
+    // Mantém a mensagem padrão quando o backend não retorna JSON.
+  }
+
+  const erro = new Error(mensagem)
+  erro.status = resposta.status
+  throw erro
+}
