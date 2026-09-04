@@ -291,11 +291,34 @@
   font-weight: 700;
 }
 
-.pedido-detalhes h2 {
+.pedido-detalhes-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 20px;
+}
+
+.pedido-detalhes h2 {
   color: #7a2947;
   font-family: "Playfair Display", serif;
   font-size: 22px;
+}
+
+.btn-cancelar-pedido {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border: 1px solid #c10e0e;
+  border-radius: 20px;
+  background: transparent;
+  color: #a51d2d;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancelar-pedido:hover {
+  background: #ffdfe2;
 }
 
 .detalhes-vazio {
@@ -379,6 +402,15 @@
 }
 
 @media (max-width: 520px) {
+  .pedido-detalhes-cabecalho {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .btn-cancelar-pedido {
+    width: 100%;
+  }
+
   .detalhes-grade {
     grid-template-columns: 1fr;
   }
