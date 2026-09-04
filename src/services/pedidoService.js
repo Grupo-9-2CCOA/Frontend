@@ -53,3 +53,28 @@ export async function criarPedido(payload) {
   erro.status = resposta.status
   throw erro
 }
+
+export async function cancelarPedido(id) {
+  const resposta = await fetch(`${BASE}/pedidos/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+
+  if (resposta.status === 204) return
+
+  let mensagem = resposta.status === 404
+    ? 'O pedido não foi encontrado.'
+    : resposta.status === 502
+      ? 'Não foi possível remover o evento do pedido no Google Calendar.'
+      : 'Não foi possível cancelar o pedido.'
+  try {
+    const corpo = await resposta.json()
+    mensagem = corpo.mensagem || corpo.message || mensagem
+  } catch {
+    // Mantém a mensagem padrão quando o backend não retorna JSON.
+  }
+
+  const erro = new Error(mensagem)
+  erro.status = resposta.status
+  throw erro
+}

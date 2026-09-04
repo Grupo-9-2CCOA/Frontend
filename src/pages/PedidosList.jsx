@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { listarPedidos, listarPedidosPorData } from '../services/pedidoService'
+import { cancelarPedido, listarPedidos, listarPedidosPorData } from '../services/pedidoService'
 import { logout } from '../services/authService'
 import NovoPedidoModal from '../components/NovoPedidoModal'
+import ConfirmModal from '../components/ConfirmModal'
 
 import '../App.css'
 import './PedidosList.css'
@@ -66,6 +67,9 @@ function PedidosList() {
   const [avisoCadastro, setAvisoCadastro] = useState('')
   const [atualizacaoLista, setAtualizacaoLista] = useState(0)
   const [saindo, setSaindo] = useState(false)
+  const [confirmacaoCancelamentoAberta, setConfirmacaoCancelamentoAberta] = useState(false)
+  const [cancelando, setCancelando] = useState(false)
+  const [erroCancelamento, setErroCancelamento] = useState(null)
 
   useEffect(() => {
     let requisicaoAtiva = true
@@ -163,6 +167,47 @@ function PedidosList() {
     }
   }
 
+  const abrirConfirmacaoCancelamento = () => {
+    setErroCancelamento(null)
+    setConfirmacaoCancelamentoAberta(true)
+  }
+
+  const fecharConfirmacaoCancelamento = () => {
+    if (cancelando) return
+    setConfirmacaoCancelamentoAberta(false)
+    setErroCancelamento(null)
+  }
+
+  const confirmarCancelamento = async () => {
+    if (!pedidoSelecionado?.id || cancelando) return
+
+    setCancelando(true)
+    setErroCancelamento(null)
+
+    try {
+      await cancelarPedido(pedidoSelecionado.id)
+      setConfirmacaoCancelamentoAberta(false)
+      setPedidos((pedidosAtuais) => pedidosAtuais.filter((pedido) => pedido.id !== pedidoSelecionado.id))
+      setPedidoSelecionado(null)
+      setMensagemSucesso('Pedido cancelado com sucesso.')
+      setCarregando(true)
+      setAtualizacaoLista((valorAtual) => valorAtual + 1)
+    } catch (error) {
+      if (error.status === 404) {
+        setConfirmacaoCancelamentoAberta(false)
+        setPedidos((pedidosAtuais) => pedidosAtuais.filter((pedido) => pedido.id !== pedidoSelecionado.id))
+        setPedidoSelecionado(null)
+        setAvisoCadastro('O pedido não foi encontrado. A lista foi atualizada.')
+        setCarregando(true)
+        setAtualizacaoLista((valorAtual) => valorAtual + 1)
+      } else {
+        setErroCancelamento(error)
+      }
+    } finally {
+      setCancelando(false)
+    }
+  }
+
   const mudarMes = (quantidade) => {
     setMesExibido((mesAtual) => new Date(
       mesAtual.getFullYear(),
@@ -253,7 +298,7 @@ function PedidosList() {
                 <tbody>
                   {pedidos.map((pedido, indice) => (
                     <tr
-                      key={`${pedido.produto}-${pedido.dataPedido}-${indice}`}
+                      key={pedido.id || `${pedido.produto}-${pedido.dataPedido}-${indice}`}
                       className={pedidoSelecionado === pedido ? 'selecionado' : ''}
                       onClick={() => setPedidoSelecionado(pedido)}
                       onKeyDown={(event) => {
@@ -264,7 +309,7 @@ function PedidosList() {
                       tabIndex='0'
                       aria-selected={pedidoSelecionado === pedido}
                     >
-                      <td>Nº {indice + 1}</td>
+                      <td>Nº {pedido.id || indice + 1}</td>
                       <td>{pedido.produto}</td>
                       <td>
                         <span className={`status-pedido ${classeEntrega(pedido.entrega?.estado)}`}>
@@ -317,7 +362,14 @@ function PedidosList() {
           </section>
 
           <section className='pedido-detalhes'>
-            <h2>Detalhes do pedido</h2>
+            <div className='pedido-detalhes-cabecalho'>
+              <h2>Detalhes do pedido</h2>
+              {pedidoSelecionado && (
+                <button type='button' className='btn-cancelar-pedido' onClick={abrirConfirmacaoCancelamento}>
+                  Cancelar pedido
+                </button>
+              )}
+            </div>
             {!pedidoSelecionado ? (
               <p className='detalhes-vazio'>Selecione um pedido para visualizar seus dados.</p>
             ) : (
@@ -342,6 +394,16 @@ function PedidosList() {
           onCreated={pedidoCriado}
         />
       )}
+
+      <ConfirmModal
+        open={confirmacaoCancelamentoAberta}
+        title='Cancelar pedido'
+        message={pedidoSelecionado ? `Deseja cancelar o pedido Nº ${pedidoSelecionado.id} - ${pedidoSelecionado.produto}?` : ''}
+        onCancel={fecharConfirmacaoCancelamento}
+        onConfirm={confirmarCancelamento}
+        error={erroCancelamento}
+        loading={cancelando}
+      />
     </div>
   )
 }
