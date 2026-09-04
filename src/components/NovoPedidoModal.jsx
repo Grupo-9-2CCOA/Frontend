@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { listClientes, listEnderecosPorCliente } from '../services/clienteService'
 import { criarPedido } from '../services/pedidoService'
+import { ENTREGA_INICIAL, STATUS_PAGAMENTO } from '../constants/statusPedido'
 
 import './NovoPedidoModal.css'
-
-const PAGAMENTOS = [
-  { id: 1, estado: 'Pendente' },
-  { id: 2, estado: 'Pago' },
-]
-
-const ANDAMENTO_INICIAL = { id: 1, estado: 'Pendente' }
 
 function formatarData(data) {
   const [ano, mes, dia] = data.split('-')
@@ -98,7 +92,7 @@ function NovoPedidoModal({ dataSelecionada, onClose, onCreated }) {
       return
     }
 
-    const pagamento = PAGAMENTOS.find((item) => item.id === Number(pagamentoId))
+    const pagamento = STATUS_PAGAMENTO.find((item) => item.id === Number(pagamentoId))
 
     setErro('')
     setSalvando(true)
@@ -111,7 +105,7 @@ function NovoPedidoModal({ dataSelecionada, onClose, onCreated }) {
         isAtivo: true,
         isReagendado: false,
         dataPedido,
-        entrega: ANDAMENTO_INICIAL,
+        entrega: ENTREGA_INICIAL,
         pagamento,
         cliente: clienteSelecionado,
         endereco: enderecoSelecionado,
@@ -182,7 +176,7 @@ function NovoPedidoModal({ dataSelecionada, onClose, onCreated }) {
             <label>
               Pagamento*
               <select value={pagamentoId} onChange={(event) => setPagamentoId(event.target.value)} required>
-                {PAGAMENTOS.map((pagamento) => (
+                {STATUS_PAGAMENTO.map((pagamento) => (
                   <option key={pagamento.id} value={pagamento.id}>{pagamento.estado}</option>
                 ))}
               </select>
@@ -205,7 +199,7 @@ function NovoPedidoModal({ dataSelecionada, onClose, onCreated }) {
 
             <label>
               Andamento inicial
-              <input value={ANDAMENTO_INICIAL.estado} readOnly />
+              <input value={ENTREGA_INICIAL.estado} readOnly />
             </label>
 
             <label className='pedido-modal-descricao'>

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { cancelarPedido, listarPedidos, listarPedidosPorData } from '../services/pedidoService'
+import { atualizarStatusPedido, cancelarPedido, listarPedidos, listarPedidosPorData } from '../services/pedidoService'
 import { logout } from '../services/authService'
+import { STATUS_ENTREGA, STATUS_PAGAMENTO } from '../constants/statusPedido'
 import NovoPedidoModal from '../components/NovoPedidoModal'
 import ConfirmModal from '../components/ConfirmModal'
 
@@ -70,6 +71,11 @@ function PedidosList() {
   const [confirmacaoCancelamentoAberta, setConfirmacaoCancelamentoAberta] = useState(false)
   const [cancelando, setCancelando] = useState(false)
   const [erroCancelamento, setErroCancelamento] = useState(null)
+  const [pagamentoId, setPagamentoId] = useState('')
+  const [entregaId, setEntregaId] = useState('')
+  const [salvandoStatus, setSalvandoStatus] = useState(false)
+  const [erroStatus, setErroStatus] = useState('')
+  const requisicaoStatus = useRef(0)
 
   useEffect(() => {
     let requisicaoAtiva = true
@@ -89,7 +95,11 @@ function PedidosList() {
               .sort((pedidoA, pedidoB) => new Date(pedidoA.dataPedido) - new Date(pedidoB.dataPedido))
 
         setPedidos(pedidosExibidos)
-        setPedidoSelecionado(pedidosExibidos[0] || null)
+        const primeiroPedido = pedidosExibidos[0] || null
+        setPedidoSelecionado(primeiroPedido)
+        setPagamentoId(primeiroPedido?.pagamento?.id ? String(primeiroPedido.pagamento.id) : '')
+        setEntregaId(primeiroPedido?.entrega?.id ? String(primeiroPedido.entrega.id) : '')
+        setErroStatus('')
       })
       .catch((error) => {
         if (!requisicaoAtiva) return
@@ -126,6 +136,10 @@ function PedidosList() {
     setMensagemSucesso('')
     setAvisoCadastro('')
     setPedidoSelecionado(null)
+    setPagamentoId('')
+    setEntregaId('')
+    setErroStatus('')
+    requisicaoStatus.current += 1
     setDataSelecionada(dataFormatada)
   }
 
@@ -136,6 +150,10 @@ function PedidosList() {
     setMensagemSucesso('')
     setAvisoCadastro('')
     setPedidoSelecionado(null)
+    setPagamentoId('')
+    setEntregaId('')
+    setErroStatus('')
+    requisicaoStatus.current += 1
     setDataSelecionada(null)
   }
 
@@ -168,6 +186,7 @@ function PedidosList() {
   }
 
   const abrirConfirmacaoCancelamento = () => {
+    if (salvandoStatus) return
     setErroCancelamento(null)
     setConfirmacaoCancelamentoAberta(true)
   }
@@ -189,6 +208,9 @@ function PedidosList() {
       setConfirmacaoCancelamentoAberta(false)
       setPedidos((pedidosAtuais) => pedidosAtuais.filter((pedido) => pedido.id !== pedidoSelecionado.id))
       setPedidoSelecionado(null)
+      setPagamentoId('')
+      setEntregaId('')
+      setErroStatus('')
       setMensagemSucesso('Pedido cancelado com sucesso.')
       setCarregando(true)
       setAtualizacaoLista((valorAtual) => valorAtual + 1)
@@ -197,6 +219,9 @@ function PedidosList() {
         setConfirmacaoCancelamentoAberta(false)
         setPedidos((pedidosAtuais) => pedidosAtuais.filter((pedido) => pedido.id !== pedidoSelecionado.id))
         setPedidoSelecionado(null)
+        setPagamentoId('')
+        setEntregaId('')
+        setErroStatus('')
         setAvisoCadastro('O pedido não foi encontrado. A lista foi atualizada.')
         setCarregando(true)
         setAtualizacaoLista((valorAtual) => valorAtual + 1)
@@ -205,6 +230,47 @@ function PedidosList() {
       }
     } finally {
       setCancelando(false)
+    }
+  }
+
+  const selecionarPedido = (pedido) => {
+    requisicaoStatus.current += 1
+    setPedidoSelecionado(pedido)
+    setPagamentoId(pedido.pagamento?.id ? String(pedido.pagamento.id) : '')
+    setEntregaId(pedido.entrega?.id ? String(pedido.entrega.id) : '')
+    setErroStatus('')
+    setMensagemSucesso('')
+  }
+
+  const salvarStatus = async () => {
+    if (!pedidoSelecionado?.id || !pagamentoId || !entregaId || salvandoStatus || cancelando) return
+
+    const pedidoId = pedidoSelecionado.id
+    const requisicaoAtual = requisicaoStatus.current + 1
+    requisicaoStatus.current = requisicaoAtual
+
+    setSalvandoStatus(true)
+    setErroStatus('')
+    setMensagemSucesso('')
+
+    try {
+      const pedidoAtualizado = await atualizarStatusPedido(pedidoId, {
+        pagamentoId: Number(pagamentoId),
+        entregaId: Number(entregaId),
+      })
+
+      if (requisicaoAtual !== requisicaoStatus.current) return
+      setPedidos((pedidosAtuais) => pedidosAtuais.map((pedido) => (
+        pedido.id === pedidoAtualizado.id ? pedidoAtualizado : pedido
+      )))
+      setPedidoSelecionado(pedidoAtualizado)
+      setPagamentoId(String(pedidoAtualizado.pagamento.id))
+      setEntregaId(String(pedidoAtualizado.entrega.id))
+      setMensagemSucesso('Status do pedido atualizado com sucesso.')
+    } catch (error) {
+      if (requisicaoAtual === requisicaoStatus.current) setErroStatus(error.message)
+    } finally {
+      setSalvandoStatus(false)
     }
   }
 
@@ -220,6 +286,10 @@ function PedidosList() {
   const enderecoFormatado = enderecoSelecionado
     ? `${enderecoSelecionado.logradouro}, ${enderecoSelecionado.numero}${enderecoSelecionado.complemento ? ` - ${enderecoSelecionado.complemento}` : ''}`
     : '-'
+  const statusFoiAlterado = pedidoSelecionado && (
+    Number(pagamentoId) !== pedidoSelecionado.pagamento?.id
+    || Number(entregaId) !== pedidoSelecionado.entrega?.id
+  )
 
   return (
     <div className='page-layout pedidos-page'>
@@ -300,10 +370,10 @@ function PedidosList() {
                     <tr
                       key={pedido.id || `${pedido.produto}-${pedido.dataPedido}-${indice}`}
                       className={pedidoSelecionado === pedido ? 'selecionado' : ''}
-                      onClick={() => setPedidoSelecionado(pedido)}
+                      onClick={() => selecionarPedido(pedido)}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
-                          setPedidoSelecionado(pedido)
+                          selecionarPedido(pedido)
                         }
                       }}
                       tabIndex='0'
@@ -365,7 +435,7 @@ function PedidosList() {
             <div className='pedido-detalhes-cabecalho'>
               <h2>Detalhes do pedido</h2>
               {pedidoSelecionado && (
-                <button type='button' className='btn-cancelar-pedido' onClick={abrirConfirmacaoCancelamento}>
+                <button type='button' className='btn-cancelar-pedido' onClick={abrirConfirmacaoCancelamento} disabled={salvandoStatus}>
                   Cancelar pedido
                 </button>
               )}
@@ -381,6 +451,36 @@ function PedidosList() {
                 <div><span>Andamento</span><strong>{pedidoSelecionado.entrega?.estado || '-'}</strong></div>
                 <div className='detalhe-largo'><span>Descrição</span><strong>{pedidoSelecionado.descricao || '-'}</strong></div>
                 <div className='detalhe-largo'><span>Endereço</span><strong>{enderecoFormatado}</strong></div>
+              </div>
+            )}
+
+            {pedidoSelecionado && (
+              <div className='status-rapido'>
+                <h3>Atualizar status</h3>
+                <div className='status-rapido-campos'>
+                  <label>
+                    Pagamento
+                    <select value={pagamentoId} onChange={(event) => setPagamentoId(event.target.value)} disabled={salvandoStatus}>
+                      {STATUS_PAGAMENTO.map((status) => (
+                        <option key={status.id} value={status.id}>{status.estado}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Andamento
+                    <select value={entregaId} onChange={(event) => setEntregaId(event.target.value)} disabled={salvandoStatus}>
+                      {STATUS_ENTREGA.map((status) => (
+                        <option key={status.id} value={status.id}>{status.estado}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <button type='button' onClick={salvarStatus} disabled={!statusFoiAlterado || salvandoStatus}>
+                    {salvandoStatus ? 'Atualizando...' : 'Atualizar status'}
+                  </button>
+                </div>
+                {erroStatus && <p className='status-rapido-erro' role='alert'>{erroStatus}</p>}
               </div>
             )}
           </section>
