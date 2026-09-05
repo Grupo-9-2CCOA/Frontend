@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { atualizarStatusPedido, cancelarPedido, listarPedidos, listarPedidosPorData } from '../services/pedidoService'
 import { logout } from '../services/authService'
 import { STATUS_ENTREGA, STATUS_PAGAMENTO } from '../constants/statusPedido'
-import NovoPedidoModal from '../components/NovoPedidoModal'
+import PedidoFormModal from '../components/PedidoFormModal'
 import ConfirmModal from '../components/ConfirmModal'
 
 import '../App.css'
@@ -64,6 +64,7 @@ function PedidosList() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [novoPedidoAberto, setNovoPedidoAberto] = useState(false)
+  const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null)
   const [mensagemSucesso, setMensagemSucesso] = useState('')
   const [avisoCadastro, setAvisoCadastro] = useState('')
   const [atualizacaoLista, setAtualizacaoLista] = useState(0)
@@ -172,6 +173,14 @@ function PedidosList() {
     setAtualizacaoLista((valorAtual) => valorAtual + 1)
   }
 
+  const pedidoEditado = () => {
+    setPedidoEmEdicao(null)
+    setPedidoSelecionado(null)
+    setMensagemSucesso('Pedido atualizado com sucesso.')
+    setCarregando(true)
+    setAtualizacaoLista((valorAtual) => valorAtual + 1)
+  }
+
   const handleLogout = async () => {
     if (saindo) return
     setSaindo(true)
@@ -189,6 +198,13 @@ function PedidosList() {
     if (salvandoStatus) return
     setErroCancelamento(null)
     setConfirmacaoCancelamentoAberta(true)
+  }
+
+  const abrirEdicaoPedido = () => {
+    if (!pedidoSelecionado || salvandoStatus) return
+    setPedidoEmEdicao(pedidoSelecionado)
+    setMensagemSucesso('')
+    setErroStatus('')
   }
 
   const fecharConfirmacaoCancelamento = () => {
@@ -435,9 +451,14 @@ function PedidosList() {
             <div className='pedido-detalhes-cabecalho'>
               <h2>Detalhes do pedido</h2>
               {pedidoSelecionado && (
-                <button type='button' className='btn-cancelar-pedido' onClick={abrirConfirmacaoCancelamento} disabled={salvandoStatus}>
-                  Cancelar pedido
-                </button>
+                <div className='pedido-detalhes-acoes'>
+                  <button type='button' className='btn-editar-pedido' onClick={abrirEdicaoPedido} disabled={salvandoStatus}>
+                    Editar pedido
+                  </button>
+                  <button type='button' className='btn-cancelar-pedido' onClick={abrirConfirmacaoCancelamento} disabled={salvandoStatus}>
+                    Cancelar pedido
+                  </button>
+                </div>
               )}
             </div>
             {!pedidoSelecionado ? (
@@ -488,10 +509,18 @@ function PedidosList() {
       </main>
 
       {novoPedidoAberto && dataSelecionada && (
-        <NovoPedidoModal
+        <PedidoFormModal
           dataSelecionada={dataSelecionada}
           onClose={() => setNovoPedidoAberto(false)}
-          onCreated={pedidoCriado}
+          onSaved={pedidoCriado}
+        />
+      )}
+
+      {pedidoEmEdicao && (
+        <PedidoFormModal
+          pedido={pedidoEmEdicao}
+          onClose={() => setPedidoEmEdicao(null)}
+          onSaved={pedidoEditado}
         />
       )}
 

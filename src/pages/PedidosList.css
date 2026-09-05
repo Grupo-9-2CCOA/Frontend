@@ -305,22 +305,43 @@
   font-size: 22px;
 }
 
+.pedido-detalhes-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-editar-pedido,
 .btn-cancelar-pedido {
   flex: 0 0 auto;
   padding: 9px 14px;
-  border: 1px solid #c10e0e;
   border-radius: 20px;
   background: transparent;
-  color: #a51d2d;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.btn-editar-pedido {
+  border: 1px solid #7a2947;
+  color: #7a2947;
+}
+
+.btn-editar-pedido:hover {
+  background: #f3dfe4;
+}
+
+.btn-cancelar-pedido {
+  border: 1px solid #c10e0e;
+  color: #a51d2d;
 }
 
 .btn-cancelar-pedido:hover {
   background: #ffdfe2;
 }
 
+.btn-editar-pedido:disabled,
 .btn-cancelar-pedido:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -472,6 +493,11 @@
   }
 
   .btn-cancelar-pedido {
+    width: 100%;
+  }
+
+  .pedido-detalhes-acoes,
+  .btn-editar-pedido {
     width: 100%;
   }
 
