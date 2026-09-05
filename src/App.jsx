@@ -5,6 +5,7 @@ import NovoPedido from './pages/NovoPedido'
 import ClientesList from './pages/ClientesList'
 import ClienteDetail from './pages/ClienteDetail'
 import PedidosList from './pages/PedidosList'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/clientes" element={<ClientesList />} />
         <Route path="/clientes/:id" element={<ClienteDetail />} />
         <Route path="/pedidos" element={<PedidosList />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   )

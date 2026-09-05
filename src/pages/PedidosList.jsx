@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import { atualizarStatusPedido, cancelarPedido, listarPedidos, listarPedidosPorData } from '../services/pedidoService'
-import { logout } from '../services/authService'
 import { STATUS_ENTREGA, STATUS_PAGAMENTO } from '../constants/statusPedido'
+import Sidebar from '../components/Sidebar'
 import PedidoFormModal from '../components/PedidoFormModal'
 import ConfirmModal from '../components/ConfirmModal'
 
@@ -54,7 +53,6 @@ function classePagamento(estado = '') {
 }
 
 function PedidosList() {
-  const navigate = useNavigate()
   const hoje = useMemo(() => new Date(), [])
   const hojeFormatado = useMemo(() => formatarDataApi(hoje), [hoje])
   const [dataSelecionada, setDataSelecionada] = useState(null)
@@ -68,7 +66,6 @@ function PedidosList() {
   const [mensagemSucesso, setMensagemSucesso] = useState('')
   const [avisoCadastro, setAvisoCadastro] = useState('')
   const [atualizacaoLista, setAtualizacaoLista] = useState(0)
-  const [saindo, setSaindo] = useState(false)
   const [confirmacaoCancelamentoAberta, setConfirmacaoCancelamentoAberta] = useState(false)
   const [cancelando, setCancelando] = useState(false)
   const [erroCancelamento, setErroCancelamento] = useState(null)
@@ -179,19 +176,6 @@ function PedidosList() {
     setMensagemSucesso('Pedido atualizado com sucesso.')
     setCarregando(true)
     setAtualizacaoLista((valorAtual) => valorAtual + 1)
-  }
-
-  const handleLogout = async () => {
-    if (saindo) return
-    setSaindo(true)
-
-    try {
-      await logout()
-      navigate('/', { replace: true })
-    } catch (error) {
-      alert(error.message || 'Não foi possível sair.')
-      setSaindo(false)
-    }
   }
 
   const abrirConfirmacaoCancelamento = () => {
@@ -309,25 +293,7 @@ function PedidosList() {
 
   return (
     <div className='page-layout pedidos-page'>
-      <aside className='sidebar'>
-        <div className='sidebar-brand'>
-          <span className='material-symbols-outlined brand-icon'>cake</span>
-          <p className='sidebar-logo'>Doces com Amor</p>
-        </div>
-
-        <nav>
-          <a href='#'><span className='material-symbols-outlined'>dashboard</span> Dashboard</a>
-          <Link to='/pedidos' className='active'><span className='material-symbols-outlined'>shopping_bag</span> Pedidos</Link>
-          <a href='#'><span className='material-symbols-outlined'>calendar_month</span> Calendário</a>
-          <Link to='/clientes'><span className='material-symbols-outlined'>group</span> Clientes</Link>
-          <a href='#'><span className='material-symbols-outlined'>settings_heart</span> Configurações</a>
-        </nav>
-
-        <button type='button' className='sidebar-logout' onClick={handleLogout} disabled={saindo}>
-          <span className='material-symbols-outlined'>logout</span>
-          {saindo ? 'Saindo...' : 'Sair'}
-        </button>
-      </aside>
+      <Sidebar active='pedidos' />
 
       <main className='pedidos-main'>
         <header className='pedidos-header'>
