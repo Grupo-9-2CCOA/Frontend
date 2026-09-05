@@ -11,6 +11,16 @@ html, body, #root {
   width: 100%;
 }
 
+.rota-protegida-carregando {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: #fdeef6;
+  color: #7a2947;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+}
+
 .main {
   display: flex;
   justify-content: center;
