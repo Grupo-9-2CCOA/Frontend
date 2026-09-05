@@ -90,7 +90,8 @@
   gap: 6px;
 }
 
-.dashboard-filtros input {
+.dashboard-filtros input,
+.dashboard-filtros select {
   height: 36px;
   padding: 0 9px;
   border: 1px solid rgba(122, 41, 71, 0.4);
@@ -99,8 +100,8 @@
   color: #4d341f;
 }
 
-.dashboard-minimo input {
-  width: 105px;
+.dashboard-minimo select {
+  min-width: 130px;
 }
 
 .dashboard-aplicar {
@@ -122,6 +123,17 @@
   flex-basis: 100%;
   color: #a51d2d;
   font-size: 12px;
+}
+
+.dashboard-periodo-aplicado {
+  flex-basis: 100%;
+  color: #765d4c;
+  font-size: 12px;
+}
+
+.dashboard-periodo-aplicado.pendente {
+  color: #a45d08;
+  font-weight: 600;
 }
 
 .dashboard-alerta {
@@ -290,7 +302,7 @@
   }
 
   .dashboard-filtros fieldset,
-  .dashboard-minimo input,
+  .dashboard-minimo select,
   .dashboard-aplicar {
     width: 100%;
   }

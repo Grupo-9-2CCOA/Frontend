@@ -148,6 +148,16 @@ export default function Dashboard() {
   const requisicaoGeral = useRef(0)
   const requisicaoTabela = useRef(0)
 
+  const atualizarRelatorio = (inicio, fim, minimoPedidos) => {
+    setErroFiltro('')
+    setCarregandoGeral(true)
+    setCarregandoTabela(secaoAtual.current !== 'pedidos')
+    setErroGeral('')
+    setErroTabela('')
+    setListas({})
+    setFiltros(criarFiltros(inicio, fim, minimoPedidos))
+  }
+
   useEffect(() => {
     const idGeral = ++requisicaoGeral.current
     const secaoSelecionada = secaoAtual.current
@@ -191,6 +201,7 @@ export default function Dashboard() {
     const periodo = periodoDoPreset(novoPreset)
     setDataInicio(periodo.inicio)
     setDataFim(periodo.fim)
+    atualizarRelatorio(periodo.inicio, periodo.fim, Number(minimo))
   }
 
   const aplicarFiltros = (event) => {
@@ -204,13 +215,7 @@ export default function Dashboard() {
       setErroFiltro('O mínimo de pedidos deve ser um número inteiro maior ou igual a 1.')
       return
     }
-    setErroFiltro('')
-    setCarregandoGeral(true)
-    setCarregandoTabela(secaoAtual.current !== 'pedidos')
-    setErroGeral('')
-    setErroTabela('')
-    setListas({})
-    setFiltros(criarFiltros(dataInicio, dataFim, minimoNumerico))
+    atualizarRelatorio(dataInicio, dataFim, minimoNumerico)
   }
 
   const selecionarSecao = async (novaSecao) => {
@@ -243,6 +248,11 @@ export default function Dashboard() {
     { id: 'clientes', total: clientesTotal },
   ]
   const dadosTabela = secao === 'pedidos' ? geral?.pedidos || [] : listas[secao] || []
+  const periodoAplicadoInicio = filtros.dataInicio.slice(0, 10).split('-').reverse().join('/')
+  const periodoAplicadoFim = filtros.dataFim.slice(0, 10).split('-').reverse().join('/')
+  const filtrosPendentes = dataInicio !== filtros.dataInicio.slice(0, 10)
+    || dataFim !== filtros.dataFim.slice(0, 10)
+    || Number(minimo) !== filtros.minimoPedidosFidelizacao
 
   return (
     <div className='page-layout dashboard-page'>
@@ -268,9 +278,20 @@ export default function Dashboard() {
             <label>Data inicial<input type='date' value={dataInicio} onChange={(event) => { setPreset('personalizado'); setDataInicio(event.target.value) }} required /></label>
             <label>Data final<input type='date' value={dataFim} onChange={(event) => { setPreset('personalizado'); setDataFim(event.target.value) }} required /></label>
           </div>
-          <label className='dashboard-minimo'>Mínimo para fidelização<input type='number' min='1' step='1' value={minimo} onChange={(event) => setMinimo(event.target.value)} required /></label>
+          <label className='dashboard-minimo'>Mínimo para fidelização
+            <select value={minimo} onChange={(event) => setMinimo(Number(event.target.value))}>
+              <option value='1'>1 pedido</option>
+              <option value='2'>2 pedidos</option>
+              <option value='3'>3 ou mais</option>
+            </select>
+          </label>
           <button type='submit' className='dashboard-aplicar' disabled={carregandoGeral}>Aplicar filtros</button>
           {erroFiltro && <p className='dashboard-filtro-erro' role='alert'>{erroFiltro}</p>}
+          <p className={`dashboard-periodo-aplicado ${filtrosPendentes ? 'pendente' : ''}`} role='status'>
+            {filtrosPendentes
+              ? 'Há alterações pendentes. Clique em Aplicar filtros.'
+              : `Exibindo de ${periodoAplicadoInicio} até ${periodoAplicadoFim}.`}
+          </p>
         </form>
 
         {erroGeral && <p className='dashboard-alerta' role='alert'>{erroGeral}</p>}
