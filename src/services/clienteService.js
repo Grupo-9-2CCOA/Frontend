@@ -1,14 +1,14 @@
 const BASE = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
 
 export async function listClientes() {
-  const res = await fetch(`${BASE}/clientes`);
+  const res = await fetch(`${BASE}/clientes`, { credentials: 'include' });
   if (res.status === 204) return [];
   if (!res.ok) throw new Error(`Erro ao listar clientes: ${res.status}`);
   return res.json();
 }
 
 export async function getCliente(id) {
-  const res = await fetch(`${BASE}/clientes/${id}`);
+  const res = await fetch(`${BASE}/clientes/${id}`, { credentials: 'include' });
   if (res.status === 404) {
     const err = new Error('Cliente não encontrado');
     err.status = 404;
@@ -22,6 +22,7 @@ export async function createCliente(payload) {
   const res = await fetch(`${BASE}/clientes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -59,7 +60,7 @@ function _normalizeEndereco(en) {
 }
 
 export async function listEnderecosPorCliente(clienteId) {
-  const res = await fetch(`${BASE}/enderecos/${clienteId}`);
+  const res = await fetch(`${BASE}/enderecos/${clienteId}`, { credentials: 'include' });
   if (res.status === 204) return [];
   if (!res.ok) throw new Error(`Erro ao listar endereços: ${res.status}`);
   const data = await res.json();
@@ -71,6 +72,7 @@ export async function createEndereco(clienteId, payload) {
   const res = await fetch(`${BASE}/enderecos/${clienteId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -126,6 +128,7 @@ export async function updateCliente(id, payload) {
   const res = await fetch(`${BASE}/clientes/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -162,6 +165,7 @@ export async function updateEndereco(enderecoId, payload) {
   const res = await fetch(`${BASE}/enderecos/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -219,7 +223,10 @@ export async function deleteEndereco(id) {
     throw err;
   }
 
-  const res = await fetch(`${BASE}/enderecos/${encodeURIComponent(enderecoId)}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}/enderecos/${encodeURIComponent(enderecoId)}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
   if (res.status === 200 || res.status === 204) return true;
 
   let parsed = null;
@@ -256,7 +263,10 @@ export async function deleteEndereco(id) {
 }
 
 export async function inactivateCliente(id) {
-  const res = await fetch(`${BASE}/clientes/${id}`, { method: 'PATCH' });
+  const res = await fetch(`${BASE}/clientes/${id}`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
   if (res.status === 200) return true;
   const err = new Error('Erro ao inativar cliente');
   err.status = res.status;
