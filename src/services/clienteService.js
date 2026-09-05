@@ -7,6 +7,13 @@ export async function listClientes() {
   return res.json();
 }
 
+export async function listClientesInativos() {
+  const res = await fetch(`${BASE}/clientes/inativos`, { credentials: 'include' });
+  if (res.status === 204) return [];
+  if (!res.ok) throw new Error(`Erro ao listar clientes inativos: ${res.status}`);
+  return res.json();
+}
+
 export async function getCliente(id) {
   const res = await fetch(`${BASE}/clientes/${id}`, { credentials: 'include' });
   if (res.status === 404) {
@@ -85,7 +92,7 @@ export async function createEndereco(clienteId, payload) {
     let parsed = null;
     try {
       parsed = await res.json();
-    } catch (_e) {
+    } catch {
       // fallback to text
     }
 
@@ -109,7 +116,9 @@ export async function createEndereco(clienteId, payload) {
       try {
         const text = await res.text();
         if (text) err.message = text;
-      } catch (_e) {}
+      } catch {
+        // Mantém a mensagem padrão quando a resposta não possui texto.
+      }
     }
 
     throw err;
@@ -176,7 +185,7 @@ export async function updateEndereco(enderecoId, payload) {
     let parsed = null;
     try {
       parsed = await res.json();
-    } catch (_e) {
+    } catch {
       // fallback to text
     }
 
@@ -198,7 +207,9 @@ export async function updateEndereco(enderecoId, payload) {
       try {
         const text = await res.text();
         if (text) err.message = text;
-      } catch (_e) {}
+      } catch {
+        // Mantém a mensagem padrão quando a resposta não possui texto.
+      }
     }
 
     throw err;
@@ -232,7 +243,7 @@ export async function deleteEndereco(id) {
   let parsed = null;
   try {
     parsed = await res.json();
-  } catch (_e) {
+  } catch {
     // ignore non-JSON responses
   }
 
@@ -269,6 +280,17 @@ export async function inactivateCliente(id) {
   });
   if (res.status === 200) return true;
   const err = new Error('Erro ao inativar cliente');
+  err.status = res.status;
+  throw err;
+}
+
+export async function reactivateCliente(id) {
+  const res = await fetch(`${BASE}/clientes/${id}/reativar`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  if (res.status === 200) return true;
+  const err = new Error('Erro ao reativar cliente');
   err.status = res.status;
   throw err;
 }

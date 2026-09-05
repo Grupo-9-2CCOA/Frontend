@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { listClientes, inactivateCliente } from '../services/clienteService';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { listClientes, listClientesInativos, inactivateCliente, reactivateCliente } from '../services/clienteService';
 import Sidebar from '../components/Sidebar';
 import ClienteTable from '../components/ClienteTable';
 import SearchToggle from '../components/SearchToggle';
@@ -16,22 +16,34 @@ export default function ClientesList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
+  const [showingInactive, setShowingInactive] = useState(false);
+  const requestId = useRef(0);
 
-  const fetchList = async () => {
+  const fetchList = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
-      const data = await listClientes();
+      const data = showingInactive ? await listClientesInativos() : await listClientes();
+      if (currentRequest !== requestId.current) return;
       setClientes(data);
     } catch (e) {
+      if (currentRequest !== requestId.current) return;
       setError(e.message || 'Erro ao carregar');
       setClientes([]);
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
-  };
+  }, [showingInactive]);
 
-  useEffect(() => { fetchList(); }, []);
+  useEffect(() => {
+    // A consulta inicial controla os estados de loading, sucesso e erro.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchList();
+    return () => {
+      requestId.current += 1;
+    };
+  }, [fetchList]);
 
   const handleSearch = (term) => setSearchTerm(term || '');
 
@@ -54,6 +66,20 @@ export default function ClientesList() {
   };
 
   const clearSearch = () => setSearchTerm('');
+
+  const toggleInactive = () => {
+    setShowingInactive((currentMode) => !currentMode);
+    setSearchTerm('');
+  };
+
+  const handleActivate = async (id) => {
+    try {
+      await reactivateCliente(id);
+      setClientes((prev) => prev.filter((cliente) => cliente.id !== id));
+    } catch (e) {
+      setError(e.message || 'Erro ao reativar cliente');
+    }
+  };
 
   const shown = filterClientes(clientes, searchTerm);
 
@@ -94,39 +120,51 @@ export default function ClientesList() {
 
       <main className='clientes-main'>
         <div className='clientes-header'>
-          <h1 className='page-title clientes-title'>Gerenciamento de Clientes</h1>
-          <button type='button' className='btn-primary' onClick={openCreateModal}>+ Novo Cliente</button>
+          <h1 className='page-title clientes-title'>{showingInactive ? 'Clientes Inativos' : 'Gerenciamento de Clientes'}</h1>
+          <div className='clientes-header-actions'>
+            <button type='button' className='btn-link' onClick={toggleInactive} disabled={loading}>
+              {showingInactive ? 'Ver clientes ativos' : 'Ver clientes inativos'}
+            </button>
+            {!showingInactive && <button type='button' className='btn-primary' onClick={openCreateModal}>+ Novo Cliente</button>}
+          </div>
         </div>
 
-        <div className='clientes-panel'>
+        <div className='clientes-panel' aria-busy={loading}>
           <div className='clientes-toolbar'>
             <div className='clientes-toolbar-spacer' />
             <SearchToggle onSearch={handleSearch} />
           </div>
 
-          {loading && <p className='clientes-status'>Carregando...</p>}
+          {loading && <p className='clientes-status clientes-status-loading'>Carregando...</p>}
           {error && <p className='clientes-status' role='alert'>{error}</p>}
 
           {!loading && !error && shown.length === 0 && (
             <div className='clientes-empty'>
-              <p>Nenhum cliente encontrado.</p>
+              <p>{showingInactive ? 'Nenhum cliente inativo encontrado.' : 'Nenhum cliente encontrado.'}</p>
               {searchTerm ? (
                 <button type='button' className='btn-link' onClick={clearSearch}>Limpar busca</button>
               ) : (
-                <button type='button' className='btn-link' onClick={() => window.location.href = '/clientes/new'}>Cadastrar cliente</button>
+                !showingInactive && <button type='button' className='btn-link' onClick={openCreateModal}>Cadastrar cliente</button>
               )}
             </div>
           )}
 
           {!loading && !error && shown.length > 0 && (
-            <ClienteTable clientes={shown} onDelete={handleDelete} onEdit={openEditModal} onOpenAddresses={openEnderecosModal} />
+            <ClienteTable
+              clientes={shown}
+              onDelete={handleDelete}
+              onEdit={openEditModal}
+              onOpenAddresses={openEnderecosModal}
+              onActivate={handleActivate}
+              showingInactive={showingInactive}
+            />
           )}
         </div>
 
         <ConfirmModal
           open={confirmOpen}
-          title='Confirmar deleção'
-          message={toDelete ? `Deseja prosseguir com a deleção (inativação) do cliente ${toDelete.nome}?` : ''}
+          title='Confirmar inativação'
+          message={toDelete ? `Deseja inativar o cliente ${toDelete.nome}?` : ''}
           onCancel={() => setConfirmOpen(false)}
           onConfirm={confirmDelete}
         />

@@ -1,18 +1,15 @@
-import { useState } from 'react';
 import styles from '../styles/checkbox.module.css';
 
-export default function Checkbox(props) {
-  const [isChecked, setIsChecked] = useState(false);
-
+export default function Checkbox({ checked = false, onChange, children }) {
   return (
     <label className={styles.label}>
       <input
         className={styles.checkbox}
         type="checkbox"
-        checked={isChecked}
-        onChange={(e) => setIsChecked(e.target.checked)}
+        checked={checked}
+        onChange={onChange}
       />
-      {props.children}
+      {children}
     </label>
   );
 }

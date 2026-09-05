@@ -12,6 +12,8 @@ export default function NovoEnderecoModal({ open, clienteId, onClose, onCreated 
 
   useEffect(() => {
     if (open) {
+      // Limpa o formulário sempre que um novo cadastro é iniciado.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogradouro('');
       setNumero('');
       setCep('');

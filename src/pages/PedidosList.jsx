@@ -328,8 +328,8 @@ function PedidosList() {
         {mensagemSucesso && <p className='pedidos-sucesso' role='status'>{mensagemSucesso}</p>}
         {avisoCadastro && <p className='pedidos-aviso' role='alert'>{avisoCadastro}</p>}
 
-        <section className='pedidos-tabela-painel'>
-          {carregando && <p className='pedidos-mensagem'>Carregando pedidos...</p>}
+        <section className='pedidos-tabela-painel' aria-busy={carregando}>
+          {carregando && <p className='pedidos-mensagem pedidos-mensagem-loading'>Carregando pedidos...</p>}
           {erro && <p className='pedidos-mensagem erro' role='alert'>{erro}</p>}
           {!carregando && !erro && pedidos.length === 0 && (
             <p className='pedidos-mensagem'>Nenhum pedido encontrado nesta data.</p>

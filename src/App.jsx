@@ -3,7 +3,6 @@ import Login from './pages/Login'
 import TrocaSenha from './pages/TrocaSenha'
 import NovoPedido from './pages/NovoPedido'
 import ClientesList from './pages/ClientesList'
-import ClienteDetail from './pages/ClienteDetail'
 import PedidosList from './pages/PedidosList'
 import Dashboard from './pages/Dashboard'
 import RotaProtegida from './components/RotaProtegida'
@@ -16,7 +15,6 @@ function App() {
         <Route path="/trocar-senha" element={<RotaProtegida permitirTrocaSenha><TrocaSenha /></RotaProtegida>} />
         <Route path="/novo-pedido" element={<RotaProtegida><NovoPedido /></RotaProtegida>} />
         <Route path="/clientes" element={<RotaProtegida><ClientesList /></RotaProtegida>} />
-        <Route path="/clientes/:id" element={<RotaProtegida><ClienteDetail /></RotaProtegida>} />
         <Route path="/pedidos" element={<RotaProtegida><PedidosList /></RotaProtegida>} />
         <Route path="/dashboard" element={<RotaProtegida><Dashboard /></RotaProtegida>} />
       </Routes>
