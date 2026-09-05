@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listClientes, listClientesInativos, inactivateCliente, reactivateCliente } from '../services/clienteService';
 import Sidebar from '../components/Sidebar';
 import ClienteTable from '../components/ClienteTable';
@@ -17,18 +17,22 @@ export default function ClientesList() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [showingInactive, setShowingInactive] = useState(false);
+  const requestId = useRef(0);
 
   const fetchList = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
       const data = showingInactive ? await listClientesInativos() : await listClientes();
+      if (currentRequest !== requestId.current) return;
       setClientes(data);
     } catch (e) {
+      if (currentRequest !== requestId.current) return;
       setError(e.message || 'Erro ao carregar');
       setClientes([]);
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, [showingInactive]);
 
@@ -36,6 +40,9 @@ export default function ClientesList() {
     // A consulta inicial controla os estados de loading, sucesso e erro.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchList();
+    return () => {
+      requestId.current += 1;
+    };
   }, [fetchList]);
 
   const handleSearch = (term) => setSearchTerm(term || '');
