@@ -56,3 +56,15 @@ export async function logout() {
   erro.status = resposta.status
   throw erro
 }
+
+export async function verificarSessao() {
+  const resposta = await fetch(`${BASE}/admin/sessao`, {
+    credentials: 'include',
+  })
+
+  if (resposta.ok) return
+
+  const erro = new Error('Sua sessão não está ativa.')
+  erro.status = resposta.status
+  throw erro
+}
