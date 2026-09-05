@@ -51,7 +51,7 @@ function TrocaSenha() {
           <p className='welcome-text'>Crie sua nova senha</p>
           <p className='description-text'>Escolha uma senha para acessar sua conta</p>
 
-          <form className='form-padding' onSubmit={handleSubmit}>
+          <form className='form-padding' onSubmit={handleSubmit} aria-busy={carregando}>
             <div className='form-field-component'>
               <label className='form-field' htmlFor='nova-senha'>Nova senha</label>
               <input
@@ -67,6 +67,8 @@ function TrocaSenha() {
                 required
               />
             </div>
+
+            <p className='password-hint'>Use entre 6 e 20 caracteres.</p>
 
             <div className='form-field-component'>
               <label className='form-field' htmlFor='confirmacao-senha'>Confirmar nova senha</label>
@@ -86,8 +88,8 @@ function TrocaSenha() {
 
             {erro && <p className='login-error' role='alert'>{erro}</p>}
 
-            <DefaultButton>
-              {carregando ? 'SALVANDO...' : 'SALVAR NOVA SENHA'}
+            <DefaultButton loading={carregando} disabled={carregando}>
+              {carregando ? 'Salvando...' : 'Salvar nova senha'}
             </DefaultButton>
           </form>
         </div>

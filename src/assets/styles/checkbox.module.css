@@ -23,3 +23,8 @@
 .checkbox:checked {
   background-color: #bc500a;
 }
+
+.checkbox:focus-visible {
+  outline: 3px solid rgba(188, 80, 10, 0.3);
+  outline-offset: 2px;
+}

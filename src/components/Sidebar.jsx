@@ -41,10 +41,10 @@ export default function Sidebar({ active }) {
             {item.texto}
           </Link>
         ) : (
-          <a key={item.id} href='#' aria-disabled='true' onClick={(event) => event.preventDefault()}>
+          <span key={item.id} className='sidebar-item-disabled' aria-disabled='true'>
             <span className='material-symbols-outlined' aria-hidden='true'>{item.icone}</span>
             {item.texto}
-          </a>
+          </span>
         ))}
       </nav>
 

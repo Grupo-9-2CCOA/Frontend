@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { DefaultButton } from '../assets/components/DefaultButton'
-import Checkbox from '../assets/components/Checkbox'
 import { login } from '../services/authService'
 
 import '../App.css'
 import { useNavigate } from 'react-router-dom'
 
 function Login() {
-  const [lembrarAcesso, setLembrarAcesso] = useState(false)
   const [usuario, setUsuario] = useState('')
   const [senha, setSenha] = useState('')
   const [carregando, setCarregando] = useState(false)
@@ -46,7 +44,7 @@ function Login() {
           <p className='welcome-text'>Boas-Vindas</p>
           <p className='description-text'>Acesse sua conta para gerenciar a confeitaria</p>
 
-          <form className='form-padding' onSubmit={handleSubmit}>
+          <form className='form-padding' onSubmit={handleSubmit} aria-busy={carregando}>
             <div className='form-field-component'>
               <label className='form-field' htmlFor='usuario'>Usuário</label>
               <input
@@ -77,18 +75,13 @@ function Login() {
 
             {erro && <p className='login-error' role='alert'>{erro}</p>}
 
-            <div className='remember-row'>
-              <Checkbox
-                checked={lembrarAcesso}
-                onChange={() => setLembrarAcesso(prev => !prev)}
-              >
-                Lembrar acesso
-              </Checkbox>
-              <a href='#' className='forgot-link'>Esqueceu a senha?</a>
+            <div className='login-security-note'>
+              <span className='material-symbols-outlined' aria-hidden='true'>lock</span>
+              Sessão protegida para a administração
             </div>
 
-            <DefaultButton>
-                {carregando ? 'ENTRANDO...' : 'ENTRAR'}
+            <DefaultButton loading={carregando} disabled={carregando}>
+              {carregando ? 'Entrando...' : 'Entrar'}
             </DefaultButton>
           </form>
         </div>
