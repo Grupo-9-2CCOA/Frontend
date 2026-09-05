@@ -7,6 +7,13 @@ export async function listClientes() {
   return res.json();
 }
 
+export async function listClientesInativos() {
+  const res = await fetch(`${BASE}/clientes/inativos`, { credentials: 'include' });
+  if (res.status === 204) return [];
+  if (!res.ok) throw new Error(`Erro ao listar clientes inativos: ${res.status}`);
+  return res.json();
+}
+
 export async function getCliente(id) {
   const res = await fetch(`${BASE}/clientes/${id}`, { credentials: 'include' });
   if (res.status === 404) {
@@ -273,6 +280,17 @@ export async function inactivateCliente(id) {
   });
   if (res.status === 200) return true;
   const err = new Error('Erro ao inativar cliente');
+  err.status = res.status;
+  throw err;
+}
+
+export async function reactivateCliente(id) {
+  const res = await fetch(`${BASE}/clientes/${id}/reativar`, {
+    method: 'PATCH',
+    credentials: 'include',
+  });
+  if (res.status === 200) return true;
+  const err = new Error('Erro ao reativar cliente');
   err.status = res.status;
   throw err;
 }

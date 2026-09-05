@@ -1,6 +1,4 @@
-import { Link } from 'react-router-dom';
-
-export default function ClienteTable({ clientes = [], onDelete, onEdit, onOpenAddresses }) {
+export default function ClienteTable({ clientes = [], onDelete, onEdit, onOpenAddresses, onActivate, showingInactive = false }) {
   return (
     <table className='clientes-table'>
       <thead>
@@ -20,44 +18,49 @@ export default function ClienteTable({ clientes = [], onDelete, onEdit, onOpenAd
             <td data-label='Celular'>{c.telefone}</td>
             <td data-label='CPF'>{c.cpf}</td>
             <td className='client-actions' data-label='Ações'>
-              <Link
-                className='action-button'
-                to={`/clientes/${c.id}`}
-                aria-label={`Ver detalhes do cliente ${c.nome}`}
-              >
-                <span className='material-symbols-outlined'>visibility</span>
-                <span>Detalhes</span>
-              </Link>
+              {showingInactive ? (
+                <button
+                  type='button'
+                  className='action-button'
+                  aria-label={`Reativar cliente ${c.nome}`}
+                  onClick={() => onActivate?.(c.id)}
+                >
+                  <span className='material-symbols-outlined'>person_check</span>
+                  <span>Reativar</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type='button'
+                    className='action-button'
+                    aria-label={`Editar cliente ${c.nome}`}
+                    onClick={(event) => { event.stopPropagation(); onEdit?.(c); }}
+                  >
+                    <span className='material-symbols-outlined'>edit</span>
+                    <span>Editar</span>
+                  </button>
 
-              <button
-                type='button'
-                className='action-button'
-                aria-label={`Editar cliente ${c.nome}`}
-                onClick={(event) => { event.stopPropagation(); onEdit?.(c); }}
-              >
-                <span className='material-symbols-outlined'>edit</span>
-                <span>Editar</span>
-              </button>
+                  <button
+                    type='button'
+                    className='action-button'
+                    aria-label={`Endereços do cliente ${c.nome}`}
+                    onClick={(event) => { event.stopPropagation(); onOpenAddresses?.(c); }}
+                  >
+                    <span className='material-symbols-outlined'>location_on</span>
+                    <span>Endereços</span>
+                  </button>
 
-              <button
-                type='button'
-                className='action-button'
-                aria-label={`Endereços do cliente ${c.nome}`}
-                onClick={(event) => { event.stopPropagation(); onOpenAddresses?.(c); }}
-              >
-                <span className='material-symbols-outlined'>location_on</span>
-                <span>Endereços</span>
-              </button>
-
-              <button
-                type='button'
-                className='action-button delete-action'
-                aria-label={`Inativar cliente ${c.nome}`}
-                onClick={(event) => { event.stopPropagation(); onDelete(c.id, c.nome); }}
-              >
-                <span className='material-symbols-outlined'>person_off</span>
-                <span>Inativar</span>
-              </button>
+                  <button
+                    type='button'
+                    className='action-button delete-action'
+                    aria-label={`Inativar cliente ${c.nome}`}
+                    onClick={(event) => { event.stopPropagation(); onDelete(c.id, c.nome); }}
+                  >
+                    <span className='material-symbols-outlined'>person_off</span>
+                    <span>Inativar</span>
+                  </button>
+                </>
+              )}
             </td>
           </tr>
         ))}
