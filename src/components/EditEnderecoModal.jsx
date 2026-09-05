@@ -22,6 +22,8 @@ export default function EditEnderecoModal({ open, endereco, onClose, onUpdated }
 
   useEffect(() => {
     if (open && endereco) {
+      // Sincroniza o formulário ao abrir o modal com outro endereço.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLogradouro(endereco.logradouro || '');
       setNumero(endereco.numero || '');
       setCep(endereco.cep || '');

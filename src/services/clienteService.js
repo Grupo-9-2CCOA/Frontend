@@ -85,7 +85,7 @@ export async function createEndereco(clienteId, payload) {
     let parsed = null;
     try {
       parsed = await res.json();
-    } catch (_e) {
+    } catch {
       // fallback to text
     }
 
@@ -109,7 +109,9 @@ export async function createEndereco(clienteId, payload) {
       try {
         const text = await res.text();
         if (text) err.message = text;
-      } catch (_e) {}
+      } catch {
+        // Mantém a mensagem padrão quando a resposta não possui texto.
+      }
     }
 
     throw err;
@@ -176,7 +178,7 @@ export async function updateEndereco(enderecoId, payload) {
     let parsed = null;
     try {
       parsed = await res.json();
-    } catch (_e) {
+    } catch {
       // fallback to text
     }
 
@@ -198,7 +200,9 @@ export async function updateEndereco(enderecoId, payload) {
       try {
         const text = await res.text();
         if (text) err.message = text;
-      } catch (_e) {}
+      } catch {
+        // Mantém a mensagem padrão quando a resposta não possui texto.
+      }
     }
 
     throw err;
@@ -232,7 +236,7 @@ export async function deleteEndereco(id) {
   let parsed = null;
   try {
     parsed = await res.json();
-  } catch (_e) {
+  } catch {
     // ignore non-JSON responses
   }
 

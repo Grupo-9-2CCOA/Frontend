@@ -14,6 +14,8 @@ export default function NewClienteModal({ open, onClose, onCreated, onUpdated, m
       const nextNome = client?.nome || '';
       const nextCpf = client?.cpf || '';
       const nextTelefone = client?.telefone || '';
+      // Sincroniza o formulário ao alternar entre criação e edição.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNome(nextNome);
       setCpf(nextCpf);
       setTelefone(nextTelefone);

@@ -31,7 +31,11 @@ export default function ClientesList() {
     }
   };
 
-  useEffect(() => { fetchList(); }, []);
+  useEffect(() => {
+    // A consulta inicial controla os estados de loading, sucesso e erro.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchList();
+  }, []);
 
   const handleSearch = (term) => setSearchTerm(term || '');
 
@@ -98,13 +102,13 @@ export default function ClientesList() {
           <button type='button' className='btn-primary' onClick={openCreateModal}>+ Novo Cliente</button>
         </div>
 
-        <div className='clientes-panel'>
+        <div className='clientes-panel' aria-busy={loading}>
           <div className='clientes-toolbar'>
             <div className='clientes-toolbar-spacer' />
             <SearchToggle onSearch={handleSearch} />
           </div>
 
-          {loading && <p className='clientes-status'>Carregando...</p>}
+          {loading && <p className='clientes-status clientes-status-loading'>Carregando...</p>}
           {error && <p className='clientes-status' role='alert'>{error}</p>}
 
           {!loading && !error && shown.length === 0 && (
@@ -113,7 +117,7 @@ export default function ClientesList() {
               {searchTerm ? (
                 <button type='button' className='btn-link' onClick={clearSearch}>Limpar busca</button>
               ) : (
-                <button type='button' className='btn-link' onClick={() => window.location.href = '/clientes/new'}>Cadastrar cliente</button>
+                <button type='button' className='btn-link' onClick={openCreateModal}>Cadastrar cliente</button>
               )}
             </div>
           )}
@@ -125,8 +129,8 @@ export default function ClientesList() {
 
         <ConfirmModal
           open={confirmOpen}
-          title='Confirmar deleção'
-          message={toDelete ? `Deseja prosseguir com a deleção (inativação) do cliente ${toDelete.nome}?` : ''}
+          title='Confirmar inativação'
+          message={toDelete ? `Deseja inativar o cliente ${toDelete.nome}?` : ''}
           onCancel={() => setConfirmOpen(false)}
           onConfirm={confirmDelete}
         />
