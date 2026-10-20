@@ -17,14 +17,8 @@ function NovoPedido() {
                         shopping_bag
                     </span>Pedidos</a>
                     <a href='#' className='sidebar-icon-text'><span className="material-symbols-outlined">
-                        calendar_month
-                    </span>Calendário</a>
-                    <a href='#' className='sidebar-icon-text'><span className="material-symbols-outlined">
                         group
                     </span>Clientes</a>
-                    <a href='#' className='sidebar-icon-text'><span className="material-symbols-outlined">
-                        settings_heart
-                    </span>Configurações</a>
                 </nav>
             </aside>
 

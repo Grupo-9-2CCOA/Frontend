@@ -5,9 +5,7 @@ import { logout } from '../services/authService'
 const ITENS = [
   { id: 'dashboard', rota: '/dashboard', icone: 'dashboard', texto: 'Dashboard' },
   { id: 'pedidos', rota: '/pedidos', icone: 'shopping_bag', texto: 'Pedidos' },
-  { id: 'calendario', rota: null, icone: 'calendar_month', texto: 'Calendário' },
   { id: 'clientes', rota: '/clientes', icone: 'group', texto: 'Clientes' },
-  { id: 'configuracoes', rota: null, icone: 'settings_heart', texto: 'Configurações' },
 ]
 
 export default function Sidebar({ active }) {
