@@ -1,0 +1,284 @@
+/* Shared visual layer, loaded after component styles. Geometry stays in its
+   original stylesheets; control borders remain distinct from surface dividers. */
+body,
+.main,
+.page-layout,
+.page-main,
+.clientes-main,
+.pedidos-main,
+.dashboard-main,
+.rota-protegida-carregando {
+  background: var(--doces-cream);
+  color: var(--doces-ink);
+}
+
+.main::before,
+.main::after {
+  background: transparent;
+}
+
+.sidebar {
+  background: var(--doces-surface);
+  border-color: var(--doces-border);
+}
+
+.pedidos-page .sidebar {
+  border-color: var(--doces-border);
+}
+
+.title,
+.sidebar-logo,
+.brand .material-symbols-outlined {
+  color: var(--doces-orange);
+}
+
+.brand-icon {
+  color: var(--doces-orange) !important;
+}
+
+.page-title,
+.clientes-title,
+.pedidos-header h1,
+.dashboard-header h1,
+.welcome-text,
+.form-field,
+.form-section h3,
+.modal-title,
+.pedido-modal-cabecalho h2,
+.pedido-detalhes h2,
+.dashboard-painel-titulo h2,
+.modal-form label,
+.pedido-modal-grade label,
+.status-rapido-campos label,
+.sidebar nav a,
+.sidebar-logout {
+  color: var(--doces-ink);
+}
+
+.sidebar nav a .material-symbols-outlined,
+.sidebar-logout .material-symbols-outlined {
+  color: inherit;
+}
+
+.sidebar nav a:hover,
+.sidebar-logout:hover:not(:disabled) {
+  background: var(--doces-pink);
+  color: var(--doces-wine);
+}
+
+.sidebar nav a.active {
+  background: var(--doces-selected);
+  color: var(--doces-wine);
+  box-shadow: inset 3px 0 var(--doces-wine);
+}
+
+.sidebar-item-disabled,
+.sidebar-item-disabled .material-symbols-outlined {
+  color: var(--doces-muted);
+  opacity: 1;
+}
+
+.description-text,
+.pedidos-header p,
+.dashboard-header p,
+.dashboard-painel-titulo p,
+.dashboard-periodo-aplicado:not(.pendente),
+.dashboard-clientes-breakdown,
+.dashboard-diferenca.neutra,
+.dashboard-estado:not(.erro),
+.pedidos-mensagem:not(.erro),
+.detalhes-vazio,
+.detalhes-grade span,
+.calendario-semana,
+.pedido-modal-cabecalho p {
+  color: var(--doces-muted);
+}
+
+.form,
+.form-section,
+.clientes-panel,
+.pedidos-tabela-painel,
+.calendario-painel,
+.pedido-detalhes,
+.dashboard-filtros {
+  background: var(--doces-surface);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.clientes-table thead th,
+.cliente-row,
+.cliente-row td,
+.enderecos-table-wrap,
+.enderecos-table th,
+.enderecos-table td,
+.pedidos-tabela th,
+.pedidos-tabela td,
+.dashboard-tabela th,
+.dashboard-tabela td,
+.dashboard-tabela tr,
+.status-rapido {
+  border-color: var(--doces-border);
+}
+
+.clientes-table thead th,
+.cliente-row td,
+.enderecos-table th,
+.enderecos-table td,
+.pedidos-tabela th {
+  color: var(--doces-ink);
+}
+
+.enderecos-table thead th,
+.pedidos-tabela th,
+.dashboard-tabela th,
+.pagamento-legenda {
+  background: var(--doces-subtle);
+}
+
+.pagamento-legenda,
+.detalhes-grade div {
+  border-color: transparent;
+}
+
+.detalhes-grade div {
+  background: var(--doces-cream);
+}
+
+.cliente-row:hover,
+.pedidos-tabela tbody tr:hover {
+  background: var(--doces-pink);
+}
+
+.pedidos-tabela tbody tr.selecionado {
+  background: var(--doces-selected);
+  box-shadow: inset 3px 0 var(--doces-wine);
+}
+
+.client-avatar {
+  background: var(--doces-subtle);
+  color: var(--doces-ink);
+}
+
+.modal-overlay,
+.pedido-modal-overlay {
+  background: rgba(50, 31, 28, 0.45);
+}
+
+.modal-container,
+.confirm-modal,
+.enderecos-modal,
+.pedido-modal {
+  background: var(--doces-surface);
+  border-color: transparent;
+  box-shadow: var(--doces-shadow);
+  color: var(--doces-ink);
+}
+
+.pedido-modal-cabecalho,
+.pedido-modal-acoes {
+  border-color: var(--doces-border);
+}
+
+.input,
+.search-toggle-input,
+.modal-form input,
+.pedido-modal-grade input,
+.pedido-modal-grade select,
+.pedido-modal-grade textarea,
+.dashboard-filtros input,
+.dashboard-filtros select,
+.status-rapido-campos select {
+  background: var(--doces-surface);
+  border-color: var(--doces-control-border);
+  color: var(--doces-ink);
+  box-shadow: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--doces-muted);
+  opacity: 1;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+.pedido-modal-grade input[readonly] {
+  background: var(--doces-subtle);
+  color: var(--doces-muted);
+  opacity: 1;
+}
+
+.input:focus,
+.search-toggle-input:focus,
+.modal-form input:focus,
+.pedido-modal-grade input:focus,
+.pedido-modal-grade select:focus,
+.pedido-modal-grade textarea:focus,
+.dashboard-filtros input:focus,
+.dashboard-filtros select:focus,
+.status-rapido-campos select:focus {
+  border-color: var(--doces-wine);
+  box-shadow: var(--doces-focus);
+}
+
+.btn-primary,
+.btn-novo-pedido,
+.pedido-modal-salvar,
+.dashboard-aplicar,
+.status-rapido-campos button {
+  background: var(--doces-wine);
+  color: var(--doces-surface);
+  border-color: var(--doces-wine);
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-novo-pedido:hover:not(:disabled),
+.pedido-modal-salvar:hover:not(:disabled),
+.dashboard-aplicar:hover:not(:disabled),
+.status-rapido-campos button:hover:not(:disabled) {
+  background: var(--doces-wine-dark);
+}
+
+.btn-secondary,
+.btn-link,
+.search-toggle-button,
+.pedido-modal-cancelar {
+  color: var(--doces-wine);
+  border-color: var(--doces-control-border);
+}
+
+.btn-secondary:hover:not(:disabled),
+.btn-link:hover:not(:disabled),
+.search-toggle-button:hover:not(:disabled),
+.pedido-modal-cancelar:hover:not(:disabled),
+.modal-close:hover:not(:disabled),
+.pedido-modal-cabecalho button:hover:not(:disabled),
+.action-button:hover:not(:disabled),
+.action-button:focus-visible {
+  background: var(--doces-pink);
+  color: var(--doces-wine);
+  transform: none;
+}
+
+/* Opaque disabled colors stay legible and do not mimic enabled primary actions. */
+button:disabled,
+button[class]:disabled {
+  background: var(--doces-subtle);
+  border-color: var(--doces-border);
+  color: var(--doces-muted);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.action-button:focus-visible,
+.pedidos-tabela tr:focus-visible {
+  outline: 2px solid var(--doces-wine);
+  outline-offset: 2px;
+}

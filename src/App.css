@@ -421,7 +421,6 @@ button, input {
   align-items: center;
   justify-content: space-between;
   padding: 8px 0 16px;
-  border-bottom: 1px solid rgba(188, 80, 10, 0.5);
   margin-bottom: 22px;
 }
 
@@ -936,21 +935,25 @@ button, input {
 
 /* Visual foundation and safe polish overrides */
 :root {
-  --doces-cream: #fff8f5;
-  --doces-pink: #fdeef6;
-  --doces-orange: #bc500a;
+  --doces-cream: #faf8f5;
+  --doces-surface: #ffffff;
+  --doces-subtle: #f3f0ed;
+  --doces-pink: #fbedf1;
+  --doces-selected: #f2d8e2;
+  --doces-orange: #92552e;
   --doces-wine: #7a2947;
   --doces-wine-dark: #612038;
-  --doces-ink: #4d341f;
-  --doces-muted: #765d4c;
-  --doces-border: rgba(122, 41, 71, 0.22);
+  --doces-ink: #432f29;
+  --doces-muted: #6b5c56;
+  --doces-border: #e5dfda;
+  --doces-control-border: #95847c;
   --doces-radius: 10px;
-  --doces-shadow: 0 8px 24px rgba(77, 52, 31, 0.10);
-  --doces-focus: 0 0 0 3px rgba(188, 80, 10, 0.25);
+  --doces-shadow: 0 18px 45px rgba(50, 31, 28, 0.18);
+  --doces-focus: 0 0 0 3px #f2d8e2;
 }
 
 body {
-  background: var(--doces-pink);
+  background: var(--doces-cream);
   color: var(--doces-ink);
   font-family: "Poppins", sans-serif;
 }
@@ -968,7 +971,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(188, 80, 10, 0.35);
+  outline: 2px solid var(--doces-wine);
   outline-offset: 2px;
 }
 
@@ -981,7 +984,7 @@ button:disabled {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--doces-pink);
+  background: var(--doces-cream);
 }
 
 .main::before,
