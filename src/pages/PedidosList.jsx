@@ -61,6 +61,9 @@ function PedidosList() {
   const [pedidoSelecionado, setPedidoSelecionado] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [paginaAtual, setPaginaAtual] = useState(0)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [temPaginacao, setTemPaginacao] = useState(false)
   const [novoPedidoAberto, setNovoPedidoAberto] = useState(false)
   const [pedidoEmEdicao, setPedidoEmEdicao] = useState(null)
   const [mensagemSucesso, setMensagemSucesso] = useState('')
@@ -79,20 +82,26 @@ function PedidosList() {
     let requisicaoAtiva = true
 
     const consulta = dataSelecionada
-      ? listarPedidosPorData(dataSelecionada)
-      : listarPedidos()
+      ? listarPedidosPorData(dataSelecionada, paginaAtual)
+      : listarPedidos(paginaAtual)
 
     consulta
-      .then((dados) => {
+      .then((resultado) => {
         if (!requisicaoAtiva) return
 
+        const pedidosOriginais = Array.isArray(resultado?.pedidos) ? resultado.pedidos : []
         const pedidosExibidos = dataSelecionada
-          ? dados
-          : dados
-              .filter((pedido) => pedido.dataPedido?.slice(0, 10) >= hojeFormatado)
-              .sort((pedidoA, pedidoB) => new Date(pedidoA.dataPedido) - new Date(pedidoB.dataPedido))
+          ? pedidosOriginais
+          : pedidosOriginais.filter((pedido) => pedidoEhValidoParaLista(pedido))
+        const quantidadePorPagina = Number(resultado?.tamanhoPagina ?? resultado?.size ?? 10)
+        const totalPaginasResposta = Number(resultado?.totalPaginas ?? resultado?.totalPages ?? 1)
+        const totalPaginasValida = Number.isFinite(totalPaginasResposta) && totalPaginasResposta > 0
+          ? totalPaginasResposta
+          : 1
 
         setPedidos(pedidosExibidos)
+        setTotalPaginas(totalPaginasValida)
+        setTemPaginacao(totalPaginasValida > 1 || pedidosExibidos.length >= quantidadePorPagina)
         const primeiroPedido = pedidosExibidos[0] || null
         setPedidoSelecionado(primeiroPedido)
         setPagamentoId(primeiroPedido?.pagamento?.id ? String(primeiroPedido.pagamento.id) : '')
@@ -103,6 +112,7 @@ function PedidosList() {
         if (!requisicaoAtiva) return
         setPedidos([])
         setPedidoSelecionado(null)
+        setTemPaginacao(false)
         setErro(error.message)
       })
       .finally(() => {
@@ -112,7 +122,7 @@ function PedidosList() {
     return () => {
       requisicaoAtiva = false
     }
-  }, [dataSelecionada, hojeFormatado, atualizacaoLista])
+  }, [dataSelecionada, atualizacaoLista, paginaAtual])
 
   const diasDoMes = useMemo(() => {
     const ano = mesExibido.getFullYear()
@@ -138,7 +148,20 @@ function PedidosList() {
     setEntregaId('')
     setErroStatus('')
     requisicaoStatus.current += 1
+    setPaginaAtual(0)
+    setTotalPaginas(1)
     setDataSelecionada(dataFormatada)
+  }
+
+  const pedidoEhValidoParaLista = (pedido) => {
+    if (!pedido) return false
+    if (pedido.entrega?.estado === 'Entregue') return false
+    if (!pedido.dataPedido) return false
+
+    const dataPedido = new Date(pedido.dataPedido)
+    if (Number.isNaN(dataPedido.getTime())) return false
+
+    return true
   }
 
   const mostrarProximosPedidos = () => {
@@ -152,15 +175,12 @@ function PedidosList() {
     setEntregaId('')
     setErroStatus('')
     requisicaoStatus.current += 1
+    setPaginaAtual(0)
+    setTotalPaginas(1)
     setDataSelecionada(null)
   }
 
   const abrirNovoPedido = () => {
-    if (dataSelecionada < hojeFormatado) {
-      setAvisoCadastro('Não é possível cadastrar um pedido em uma data anterior a hoje.')
-      return
-    }
-
     setAvisoCadastro('')
     setNovoPedidoAberto(true)
   }
@@ -282,6 +302,14 @@ function PedidosList() {
     ))
   }
 
+  const mudarPagina = (novaPagina) => {
+    if (novaPagina < 0 || novaPagina >= totalPaginas || carregando) return
+
+    setCarregando(true)
+    setErro('')
+    setPaginaAtual(novaPagina)
+  }
+
   const enderecoSelecionado = pedidoSelecionado?.endereco
   const enderecoFormatado = enderecoSelecionado
     ? `${enderecoSelecionado.logradouro}, ${enderecoSelecionado.numero}${enderecoSelecionado.complemento ? ` - ${enderecoSelecionado.complemento}` : ''}`
@@ -307,14 +335,12 @@ function PedidosList() {
           </div>
 
           <div className='pedidos-acoes-cabecalho'>
-            {dataSelecionada && (
-              <button type='button' className='btn-novo-pedido' onClick={abrirNovoPedido}>
-                + Novo pedido
-              </button>
-            )}
+            <button type='button' className='btn-novo-pedido' onClick={abrirNovoPedido}>
+              + Novo pedido
+            </button>
             {dataSelecionada && (
               <button type='button' className='btn-proximos-pedidos' onClick={mostrarProximosPedidos}>
-                Ver próximos pedidos
+                Pedidos mais próximos
               </button>
             )}
             <div className='pagamento-legenda' aria-label='Legenda de pagamento'>
@@ -332,55 +358,75 @@ function PedidosList() {
           {carregando && <p className='pedidos-mensagem pedidos-mensagem-loading'>Carregando pedidos...</p>}
           {erro && <p className='pedidos-mensagem erro' role='alert'>{erro}</p>}
           {!carregando && !erro && pedidos.length === 0 && (
-            <p className='pedidos-mensagem'>Nenhum pedido encontrado nesta data.</p>
+            <p className='pedidos-mensagem'>Nenhum pedido a ser entregue.</p>
           )}
 
           {!carregando && !erro && pedidos.length > 0 && (
-            <div className='pedidos-tabela-container'>
-              <table className='pedidos-tabela'>
-                <thead>
-                  <tr>
-                    <th>Pedido</th>
-                    <th>Produto</th>
-                    <th>Status</th>
-                    <th>Data</th>
-                    <th>Pagamento</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pedidos.map((pedido, indice) => (
-                    <tr
-                      key={pedido.id || `${pedido.produto}-${pedido.dataPedido}-${indice}`}
-                      className={pedidoSelecionado === pedido ? 'selecionado' : ''}
-                      onClick={() => selecionarPedido(pedido)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          selecionarPedido(pedido)
-                        }
-                      }}
-                      tabIndex='0'
-                      aria-selected={pedidoSelecionado === pedido}
-                    >
-                      <td>Nº {pedido.id || indice + 1}</td>
-                      <td>{pedido.produto}</td>
-                      <td>
-                        <span className={`status-pedido ${classeEntrega(pedido.entrega?.estado)}`}>
-                          {pedido.entrega?.estado || 'Pendente'}
-                        </span>
-                      </td>
-                      <td>{formatarDataExibicao(pedido.dataPedido)}</td>
-                      <td className='pagamento-celula'>
-                        <span
-                          className={`pagamento-ponto ${classePagamento(pedido.pagamento?.estado)}`}
-                          title={pedido.pagamento?.estado || 'Pendente'}
-                        />
-                        <span>{pedido.pagamento?.estado || 'Pendente'}</span>
-                      </td>
+            <>
+              <div className='pedidos-tabela-container'>
+                <table className='pedidos-tabela'>
+                  <thead>
+                    <tr>
+                      <th>Pedido</th>
+                      <th>Produto</th>
+                      <th>Status</th>
+                      <th>Data</th>
+                      <th>Pagamento</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {pedidos.map((pedido, indice) => (
+                      <tr
+                        key={pedido.id || `${pedido.produto}-${pedido.dataPedido}-${indice}`}
+                        className={pedidoSelecionado === pedido ? 'selecionado' : ''}
+                        onClick={() => selecionarPedido(pedido)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            selecionarPedido(pedido)
+                          }
+                        }}
+                        tabIndex='0'
+                        aria-selected={pedidoSelecionado === pedido}
+                      >
+                        <td>Nº {pedido.id || indice + 1}</td>
+                        <td>{pedido.produto}</td>
+                        <td>
+                          <span className={`status-pedido ${classeEntrega(pedido.entrega?.estado)}`}>
+                            {pedido.entrega?.estado || 'Pendente'}
+                          </span>
+                        </td>
+                        <td>{formatarDataExibicao(pedido.dataPedido)}</td>
+                        <td className='pagamento-celula'>
+                          <span
+                            className={`pagamento-ponto ${classePagamento(pedido.pagamento?.estado)}`}
+                            title={pedido.pagamento?.estado || 'Pendente'}
+                          />
+                          <span>{pedido.pagamento?.estado || 'Pendente'}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {temPaginacao && (
+                <div className='pedidos-paginacao' aria-label='Paginação de pedidos'>
+                  <button type='button' onClick={() => mudarPagina(paginaAtual - 1)} disabled={paginaAtual === 0 || carregando}>
+                    Anterior
+                  </button>
+                  <span>
+                    Página {paginaAtual + 1} de {totalPaginas}
+                  </span>
+                  <button
+                    type='button'
+                    onClick={() => mudarPagina(paginaAtual + 1)}
+                    disabled={carregando || paginaAtual >= totalPaginas - 1}
+                  >
+                    Próxima
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -474,7 +520,7 @@ function PedidosList() {
         </div>
       </main>
 
-      {novoPedidoAberto && dataSelecionada && (
+      {novoPedidoAberto && (
         <PedidoFormModal
           dataSelecionada={dataSelecionada}
           onClose={() => setNovoPedidoAberto(false)}

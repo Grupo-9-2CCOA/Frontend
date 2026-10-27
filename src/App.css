@@ -146,11 +146,25 @@ html, body, #root {
   width: 100%;
 }
 
+.password-hint {
+  margin: -10px 0 16px;
+  color: #7a2947;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+}
+
 .form-padding{
     width: 100%;
     display: flex;
     flex-direction: column;
     padding: 0px 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
 }
 
 .brand .material-symbols-outlined {
@@ -603,6 +617,33 @@ button, input {
   padding: 24px 10px 14px;
   color: #4d341f;
   font-size: 1rem;
+}
+
+.clientes-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+  color: #4d341f;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.clientes-paginacao button {
+  padding: 8px 14px;
+  border: 1px solid #7a2947;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a2947;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clientes-paginacao button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .clientes-empty {

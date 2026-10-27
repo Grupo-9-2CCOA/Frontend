@@ -17,33 +17,37 @@ export default function ClientesList() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const [showingInactive, setShowingInactive] = useState(false);
+  const [paginaAtual, setPaginaAtual] = useState(0);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const requestId = useRef(0);
 
-  const fetchList = useCallback(async () => {
+  const fetchList = useCallback(async (pagina = 0) => {
     const currentRequest = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
-      const data = showingInactive ? await listClientesInativos() : await listClientes();
+      const resposta = showingInactive ? await listClientesInativos(pagina, 10) : await listClientes(pagina, 10);
       if (currentRequest !== requestId.current) return;
-      setClientes(data);
+      setClientes(resposta?.clientes || resposta?.content || []);
+      setPaginaAtual(Number(resposta?.page ?? pagina));
+      setTotalPaginas(Number(resposta?.totalPages || 1));
     } catch (e) {
       if (currentRequest !== requestId.current) return;
       setError(e.message || 'Erro ao carregar');
       setClientes([]);
+      setPaginaAtual(0);
+      setTotalPaginas(1);
     } finally {
       if (currentRequest === requestId.current) setLoading(false);
     }
   }, [showingInactive]);
 
   useEffect(() => {
-    // A consulta inicial controla os estados de loading, sucesso e erro.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchList();
+    fetchList(paginaAtual);
     return () => {
       requestId.current += 1;
     };
-  }, [fetchList]);
+  }, [paginaAtual, showingInactive]);
 
   const handleSearch = (term) => setSearchTerm(term || '');
 
@@ -69,7 +73,13 @@ export default function ClientesList() {
 
   const toggleInactive = () => {
     setShowingInactive((currentMode) => !currentMode);
+    setPaginaAtual(0);
     setSearchTerm('');
+  };
+
+  const mudarPagina = (novaPagina) => {
+    if (novaPagina < 0 || novaPagina >= totalPaginas) return;
+    setPaginaAtual(novaPagina);
   };
 
   const handleActivate = async (id) => {
@@ -160,6 +170,18 @@ export default function ClientesList() {
             />
           )}
         </div>
+
+        {!loading && totalPaginas > 1 && (
+          <div className='clientes-paginacao' aria-label='Paginação de clientes'>
+            <button type='button' onClick={() => mudarPagina(paginaAtual - 1)} disabled={paginaAtual === 0}>
+              Anterior
+            </button>
+            <span>Página {paginaAtual + 1} de {totalPaginas}</span>
+            <button type='button' onClick={() => mudarPagina(paginaAtual + 1)} disabled={paginaAtual >= totalPaginas - 1}>
+              Próxima
+            </button>
+          </div>
+        )}
 
         <ConfirmModal
           open={confirmOpen}

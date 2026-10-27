@@ -18,13 +18,58 @@ function formatarDataApi(data) {
   return `${ano}-${mes}-${dia}`
 }
 
+function formatarDataBrasileira(data) {
+  if (!data) return ''
+  if (data.includes('/')) return data
+
+  const [ano, mes, dia] = data.split('-')
+  if (!ano || !mes || !dia) return ''
+
+  return `${dia}/${mes}/${ano}`
+}
+
+function formatarDataApiBrasileira(dataBrasileira) {
+  if (!dataBrasileira) return ''
+
+  const partes = dataBrasileira.split('/')
+  if (partes.length !== 3) return ''
+
+  const [dia, mes, ano] = partes
+  if (!dia || !mes || !ano) return ''
+
+  const data = new Date(Number(ano), Number(mes) - 1, Number(dia))
+  const valido = data.getFullYear() === Number(ano)
+    && data.getMonth() === Number(mes) - 1
+    && data.getDate() === Number(dia)
+
+  if (!valido) return ''
+
+  return `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+}
+
+function formatarDataParaMask(data) {
+  const valor = data.replace(/\D/g, '').slice(0, 8)
+
+  if (valor.length <= 2) return valor
+  if (valor.length <= 4) return `${valor.slice(0, 2)}/${valor.slice(2)}`
+
+  return `${valor.slice(0, 2)}/${valor.slice(2, 4)}/${valor.slice(4)}`
+}
+
+function formatarHorarioParaMask(horario) {
+  const valor = horario.replace(/\D/g, '').slice(0, 4)
+
+  if (valor.length <= 2) return valor
+  return `${valor.slice(0, 2)}:${valor.slice(2)}`
+}
+
 function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
   const editando = Boolean(pedido)
-  const dataInicial = pedido?.dataPedido?.slice(0, 10) || dataSelecionada
+  const dataInicial = pedido?.dataPedido?.slice(0, 10) || dataSelecionada || ''
   const [produto, setProduto] = useState(pedido?.produto || '')
   const [descricao, setDescricao] = useState(pedido?.descricao || '')
   const [valor, setValor] = useState(pedido?.valor ? String(pedido.valor) : '')
-  const [dataEntrega, setDataEntrega] = useState(dataInicial)
+  const [dataEntrega, setDataEntrega] = useState(formatarDataBrasileira(dataInicial))
   const [horario, setHorario] = useState(pedido?.dataPedido?.slice(11, 16) || '')
   const [pagamentoId, setPagamentoId] = useState(String(pedido?.pagamento?.id || 1))
   const [clientes, setClientes] = useState([])
@@ -82,10 +127,10 @@ function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
       ? listEnderecosPorCliente(pedido.cliente.id)
       : Promise.resolve([])
 
-    Promise.all([listClientes(), consultaEnderecos])
-      .then(([clientesRecebidos, enderecosRecebidos]) => {
+    Promise.all([listClientes(0, 500), consultaEnderecos])
+      .then(([paginaClientes, enderecosRecebidos]) => {
         if (!requisicaoAtiva) return
-        setClientes(clientesRecebidos)
+        setClientes(paginaClientes?.clientes || paginaClientes?.content || [])
         setEnderecos(enderecosRecebidos)
       })
       .catch((error) => {
@@ -146,11 +191,19 @@ function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
       return
     }
 
-    const dataPedido = `${dataEntrega}T${horario}:00`
-    if (new Date(dataPedido) <= new Date()) {
-      setErro('A data e o horário de entrega devem estar no futuro.')
+    const dataApi = formatarDataApiBrasileira(dataEntrega)
+    if (!dataApi) {
+      setErro('Informe uma data válida no formato dd/mm/yyyy.')
       return
     }
+
+    const horarioValidado = formatarHorarioParaMask(horario)
+    if (horarioValidado.length !== 5 || !/^\d{2}:\d{2}$/.test(horarioValidado)) {
+      setErro('Informe o horário no formato hh:mm.')
+      return
+    }
+
+    const dataPedido = `${dataApi}T${horarioValidado}:00`
 
     const pagamento = editando
       ? pedido.pagamento
@@ -191,7 +244,7 @@ function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
         <header className='pedido-modal-cabecalho'>
           <div>
             <h2 id='pedido-form-titulo'>{editando ? 'Editar pedido' : 'Novo pedido'}</h2>
-            <p>{editando ? `Pedido Nº ${pedido.id}` : `Entrega em ${formatarData(dataSelecionada)}`}</p>
+            <p>{editando ? `Pedido Nº ${pedido.id}` : dataSelecionada ? `Entrega em ${formatarData(dataSelecionada)}` : 'Cadastro de pedido'}</p>
           </div>
           <button type='button' onClick={onClose} disabled={salvando} aria-label={editando ? 'Fechar edição de pedido' : 'Fechar cadastro de pedido'}>×</button>
         </header>
@@ -260,17 +313,25 @@ function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
             </label>
 
             <label>
-              Data de entrega{editando ? '*' : ''}
-              {editando ? (
-                <input type='date' value={dataEntrega} min={hoje} onChange={(event) => setDataEntrega(event.target.value)} required />
-              ) : (
-                <input value={formatarData(dataSelecionada)} readOnly />
-              )}
+              Data de entrega*
+              <input
+                type='text'
+                value={dataEntrega}
+                placeholder='dd/mm/yyyy'
+                onChange={(event) => setDataEntrega(formatarDataParaMask(event.target.value))}
+                required
+              />
             </label>
 
             <label>
               Horário de entrega*
-              <input type='time' value={horario} onChange={(event) => setHorario(event.target.value)} required />
+              <input
+                type='text'
+                value={horario}
+                placeholder='hh:mm'
+                onChange={(event) => setHorario(formatarHorarioParaMask(event.target.value))}
+                required
+              />
             </label>
 
             <label>

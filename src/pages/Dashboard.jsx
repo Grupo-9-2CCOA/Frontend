@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Sidebar from '../components/Sidebar'
+import { buscarPedidoPorId } from '../services/pedidoService'
 import {
   buscarClientesRelatorio,
   buscarPedidosCancelados,
@@ -7,6 +8,7 @@ import {
   buscarRelatorioGeral,
 } from '../services/relatorioService'
 import '../App.css'
+import '../components/NovoPedidoModal.css'
 import './Dashboard.css'
 
 const PRESETS = [
@@ -87,44 +89,144 @@ function formatarCpf(valor) {
   return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`
 }
 
-function Diferenca({ valor }) {
+function Diferenca({ valor, invertida = false }) {
   const numero = Number(valor || 0)
-  const classe = numero > 0 ? 'positiva' : numero < 0 ? 'negativa' : 'neutra'
+  const classe = numero > 0
+    ? (invertida ? 'negativa' : 'positiva')
+    : numero < 0
+      ? (invertida ? 'positiva' : 'negativa')
+      : 'neutra'
   const prefixo = numero > 0 ? '+' : ''
-  return <span className={`dashboard-diferenca ${classe}`}>{prefixo}{numero} vs. período anterior</span>
+  const texto = numero === 0
+    ? 'Mesmo valor do período anterior'
+    : `${prefixo}${numero} vs. período anterior`
+
+  return <span className={`dashboard-diferenca ${classe}`}>{texto}</span>
 }
 
-function Tabela({ secao, dados, carregando, erro }) {
+function Tabela({ secao, dados, carregando, erro, onPedidoClick }) {
   if (carregando) return <p className='dashboard-estado' role='status'>Carregando dados...</p>
   if (erro) return <p className='dashboard-estado erro' role='alert'>{erro}</p>
   if (!dados.length) return <p className='dashboard-estado'>Nenhum registro encontrado no período.</p>
 
   const colunas = {
     pedidos: ['Pedido', 'Produto', 'Criado em', 'Entrega', 'Pagamento'],
-    cancelados: ['Pedido', 'Produto', 'Cancelado em'],
+    cancelados: ['Pedido', 'Produto', 'Cliente', 'Telefone', 'Cancelado em'],
     reagendados: ['Pedido', 'Produto', 'Status', 'Criado em', 'Reagendado para', 'Pagamento'],
-    clientes: ['Cliente', 'Nome', 'Telefone', 'CPF'],
+    clientes: ['Cliente', 'Nome', 'Telefone', 'CPF', 'Fidelização'],
   }[secao]
 
-  const valores = (item) => ({
-    pedidos: [item.id, item.produto, formatarDataHora(item.dataCriacao), item.entrega?.estado || '-', item.pagamento?.estado || '-'],
-    cancelados: [item.id, item.produto, formatarDataHora(item.dataCancelamento)],
-    reagendados: [item.id, item.produto, item.status?.estado || '-', formatarDataHora(item.dataCriacao), formatarDataHora(item.dataReagendada), item.pagamento?.estado || '-'],
-    clientes: [item.id, item.nome, formatarTelefone(item.telefone), formatarCpf(item.cpf)],
-  })[secao]
+  const valores = {
+    pedidos: (item) => [item.id, item.produto, formatarDataHora(item.dataCriacao), item.entrega?.estado || '-', item.pagamento?.estado || '-'],
+    cancelados: (item) => [item.id, item.produto, item.nomeCliente || '-', formatarTelefone(item.telefoneCliente), formatarDataHora(item.dataCancelamento)],
+    reagendados: (item) => [item.id, item.produto, item.status?.estado || '-', formatarDataHora(item.dataCriacao), formatarDataHora(item.dataReagendada), item.pagamento?.estado || '-'],
+    clientes: (item) => {
+      const clienteEhFidelizado = item.fidelizado === true || item.fidelizado === 'true' || item.fidelizado === 1
+      return [
+        item.id,
+        item.nome,
+        formatarTelefone(item.telefone),
+        formatarCpf(item.cpf),
+        clienteEhFidelizado ? 'Fidelizado' : 'Não fidelizado',
+      ]
+    },
+  }
 
   return (
     <div className='dashboard-tabela-container'>
       <table className='dashboard-tabela'>
         <thead><tr>{colunas.map((coluna) => <th key={coluna} scope='col'>{coluna}</th>)}</tr></thead>
         <tbody>
-          {dados.map((item) => (
-            <tr key={item.id}>
-              {valores(item).map((valor, indice) => <td key={colunas[indice]} data-label={colunas[indice]}>{valor ?? '-'}</td>)}
-            </tr>
-          ))}
+          {dados.map((item) => {
+            const valoresItem = valores[secao](item)
+            const clicavel = secao !== 'clientes'
+            return (
+              <tr
+                key={item.id}
+                className={clicavel ? 'dashboard-row-clickable' : ''}
+                onClick={clicavel ? () => onPedidoClick?.(item) : undefined}
+                onKeyDown={clicavel ? (event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    onPedidoClick?.(item)
+                  }
+                } : undefined}
+                tabIndex={clicavel ? 0 : undefined}
+                aria-label={clicavel ? `Abrir detalhes do pedido ${item.id}` : undefined}
+              >
+                {valoresItem.map((valor, indice) => (
+                  <td key={colunas[indice]} data-label={colunas[indice]}>
+                    {secao === 'clientes' && colunas[indice] === 'Fidelização' ? (
+                      <span className={`dashboard-fidelizacao ${valor === 'Fidelizado' ? 'fidelizado' : 'nao-fidelizado'}`}>
+                        {valor}
+                      </span>
+                    ) : (valor ?? '-')}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function PedidoDetalhesModal({ pedido, onClose }) {
+  if (!pedido) return null
+
+  const enderecoFormatado = pedido.endereco
+    ? `${pedido.endereco.logradouro}, ${pedido.endereco.numero}${pedido.endereco.complemento ? ` - ${pedido.endereco.complemento}` : ''}`
+    : '-'
+
+  return (
+    <div className='pedido-modal-overlay'>
+      <div className='pedido-modal' role='dialog' aria-modal='true' aria-labelledby='dashboard-pedido-modal-titulo'>
+        <header className='pedido-modal-cabecalho'>
+          <div>
+            <h2 id='dashboard-pedido-modal-titulo'>Detalhes do pedido</h2>
+            <p>Pedido Nº {pedido.id}</p>
+          </div>
+          <button type='button' className='modal-close' aria-label='Fechar detalhes do pedido' onClick={onClose}>×</button>
+        </header>
+
+        <div className='pedido-modal-grade'>
+          <label>
+            Produto
+            <input value={pedido.produto || '-'} readOnly />
+          </label>
+
+          <label>
+            Valor
+            <input value={Number(pedido.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} readOnly />
+          </label>
+
+          <label>
+            Cliente
+            <input value={pedido.cliente?.nome || '-'} readOnly />
+          </label>
+
+          <label>
+            Pagamento
+            <input value={pedido.pagamento?.estado || '-'} readOnly />
+          </label>
+
+          <label>
+            Andamento
+            <input value={pedido.entrega?.estado || '-'} readOnly />
+          </label>
+
+          <label>
+            Endereço
+            <input value={enderecoFormatado} readOnly />
+          </label>
+
+          <label className='pedido-modal-descricao'>
+            Descrição
+            <textarea value={pedido.descricao || '-'} readOnly />
+          </label>
+        </div>
+      </div>
     </div>
   )
 }
@@ -139,6 +241,9 @@ export default function Dashboard() {
   const [secao, setSecao] = useState('pedidos')
   const [geral, setGeral] = useState(null)
   const [listas, setListas] = useState({})
+  const [pedidoDetalhes, setPedidoDetalhes] = useState(null)
+  const [carregandoPedidoDetalhes, setCarregandoPedidoDetalhes] = useState(false)
+  const [erroPedidoDetalhes, setErroPedidoDetalhes] = useState('')
   const [carregandoGeral, setCarregandoGeral] = useState(true)
   const [carregandoTabela, setCarregandoTabela] = useState(false)
   const [erroGeral, setErroGeral] = useState('')
@@ -254,6 +359,28 @@ export default function Dashboard() {
     || dataFim !== filtros.dataFim.slice(0, 10)
     || Number(minimo) !== filtros.minimoPedidosFidelizacao
 
+  const abrirDetalhesPedido = async (pedidoResumo) => {
+    if (!pedidoResumo?.id) return
+
+    setCarregandoPedidoDetalhes(true)
+    setErroPedidoDetalhes('')
+
+    try {
+      const resposta = await buscarPedidoPorId(pedidoResumo.id)
+      setPedidoDetalhes(resposta)
+    } catch (error) {
+      setPedidoDetalhes(null)
+      setErroPedidoDetalhes(error.message || 'Não foi possível carregar os detalhes do pedido.')
+    } finally {
+      setCarregandoPedidoDetalhes(false)
+    }
+  }
+
+  const fecharDetalhesPedido = () => {
+    setPedidoDetalhes(null)
+    setErroPedidoDetalhes('')
+  }
+
   return (
     <div className='page-layout dashboard-page'>
       <Sidebar active='dashboard' />
@@ -306,7 +433,7 @@ export default function Dashboard() {
                   <span>Não fidelizados: {geral?.clientesNaoFidelizados || 0}</span>
                   <span>Novos: {geral?.clientesNovos || 0}</span>
                 </span>
-              ) : <Diferenca valor={card.diferenca} />}
+              ) : <Diferenca valor={card.diferenca} invertida={card.id === 'cancelados' || card.id === 'reagendados'} />}
             </button>
           ))}
         </section>
@@ -316,9 +443,44 @@ export default function Dashboard() {
             <div><h2 id='dashboard-tabela-titulo'>{SECOES[secao].titulo}</h2><p>Registros mais recentes do período</p></div>
             <span className='material-symbols-outlined' aria-hidden='true'>{SECOES[secao].icone}</span>
           </div>
-          <Tabela secao={secao} dados={dadosTabela} carregando={carregandoGeral || carregandoTabela} erro={secao === 'pedidos' ? erroGeral : erroTabela} />
+          <Tabela
+            secao={secao}
+            dados={dadosTabela}
+            carregando={carregandoGeral || carregandoTabela}
+            erro={secao === 'pedidos' ? erroGeral : erroTabela}
+            onPedidoClick={abrirDetalhesPedido}
+          />
         </section>
       </main>
+
+      {carregandoPedidoDetalhes && (
+        <div className='pedido-modal-overlay'>
+          <div className='pedido-modal'>
+            <div className='pedido-modal-cabecalho'>
+              <div>
+                <h2>Detalhes do pedido</h2>
+                <p>Carregando...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {erroPedidoDetalhes && (
+        <div className='pedido-modal-overlay'>
+          <div className='pedido-modal' role='alertdialog' aria-modal='true' aria-labelledby='dashboard-pedido-erro-titulo'>
+            <header className='pedido-modal-cabecalho'>
+              <div>
+                <h2 id='dashboard-pedido-erro-titulo'>Detalhes indisponíveis</h2>
+              </div>
+              <button type='button' className='modal-close' aria-label='Fechar aviso' onClick={fecharDetalhesPedido}>×</button>
+            </header>
+            <p className='pedido-modal-erro'>{erroPedidoDetalhes}</p>
+          </div>
+        </div>
+      )}
+
+      <PedidoDetalhesModal pedido={pedidoDetalhes} onClose={fecharDetalhesPedido} />
     </div>
   )
 }
