@@ -29,14 +29,6 @@ function normalizarPaginaClientes(dados) {
   };
 }
 
-function normalizarListaClientes(dados) {
-  if (Array.isArray(dados)) return dados;
-  if (Array.isArray(dados?.content)) return dados.content;
-  if (Array.isArray(dados?.clientes)) return dados.clientes;
-  if (Array.isArray(dados?.data)) return dados.data;
-  return [];
-}
-
 export async function listClientes(pagina = 0, tamanho = TAMANHO_PAGINA_PADRAO) {
   const parametros = new URLSearchParams({
     page: String(pagina),
