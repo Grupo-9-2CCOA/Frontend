@@ -52,9 +52,19 @@ function classePagamento(estado = '') {
   return classes[estado] || 'nao-pago'
 }
 
+function pedidoEhValidoParaLista(pedido) {
+  if (!pedido) return false
+  if (pedido.entrega?.estado === 'Entregue') return false
+  if (!pedido.dataPedido) return false
+
+  const dataPedido = new Date(pedido.dataPedido)
+  if (Number.isNaN(dataPedido.getTime())) return false
+
+  return true
+}
+
 function PedidosList() {
   const hoje = useMemo(() => new Date(), [])
-  const hojeFormatado = useMemo(() => formatarDataApi(hoje), [hoje])
   const [dataSelecionada, setDataSelecionada] = useState(null)
   const [mesExibido, setMesExibido] = useState(new Date(hoje.getFullYear(), hoje.getMonth(), 1))
   const [pedidos, setPedidos] = useState([])
@@ -151,17 +161,6 @@ function PedidosList() {
     setPaginaAtual(0)
     setTotalPaginas(1)
     setDataSelecionada(dataFormatada)
-  }
-
-  const pedidoEhValidoParaLista = (pedido) => {
-    if (!pedido) return false
-    if (pedido.entrega?.estado === 'Entregue') return false
-    if (!pedido.dataPedido) return false
-
-    const dataPedido = new Date(pedido.dataPedido)
-    if (Number.isNaN(dataPedido.getTime())) return false
-
-    return true
   }
 
   const mostrarProximosPedidos = () => {

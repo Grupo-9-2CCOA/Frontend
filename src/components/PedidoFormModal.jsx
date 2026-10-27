@@ -11,13 +11,6 @@ function formatarData(data) {
   return `${dia}/${mes}/${ano}`
 }
 
-function formatarDataApi(data) {
-  const ano = data.getFullYear()
-  const mes = String(data.getMonth() + 1).padStart(2, '0')
-  const dia = String(data.getDate()).padStart(2, '0')
-  return `${ano}-${mes}-${dia}`
-}
-
 function formatarDataBrasileira(data) {
   if (!data) return ''
   if (data.includes('/')) return data
@@ -82,7 +75,6 @@ function PedidoFormModal({ dataSelecionada, pedido = null, onClose, onSaved }) {
   const [erro, setErro] = useState('')
   const requisicaoEnderecos = useRef(0)
   const modalRef = useRef(null)
-  const hoje = formatarDataApi(new Date())
 
   useEffect(() => {
     const elementoAnterior = document.activeElement

@@ -12,7 +12,7 @@ vi.mock('../src/services/pedidoService', () => ({
   atualizarPedido: vi.fn(),
 }))
 
-import { listarPedidos, listarPedidosPorData } from '../src/services/pedidoService'
+import { listarPedidos } from '../src/services/pedidoService'
 
 const pedido = (id, dia) => ({
   id,

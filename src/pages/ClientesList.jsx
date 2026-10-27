@@ -43,11 +43,13 @@ export default function ClientesList() {
   }, [showingInactive]);
 
   useEffect(() => {
+    // A consulta inicial controla os estados de loading, sucesso e erro.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchList(paginaAtual);
     return () => {
       requestId.current += 1;
     };
-  }, [paginaAtual, showingInactive]);
+  }, [fetchList, paginaAtual]);
 
   const handleSearch = (term) => setSearchTerm(term || '');
 
