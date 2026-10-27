@@ -13,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/trocar-senha" element={<RotaProtegida permitirTrocaSenha><TrocaSenha /></RotaProtegida>} />
+        <Route path="/senha" element={<RotaProtegida><TrocaSenha modo='configuracao' /></RotaProtegida>} />
         <Route path="/novo-pedido" element={<RotaProtegida><NovoPedido /></RotaProtegida>} />
         <Route path="/clientes" element={<RotaProtegida><ClientesList /></RotaProtegida>} />
         <Route path="/pedidos" element={<RotaProtegida><PedidosList /></RotaProtegida>} />

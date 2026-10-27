@@ -21,12 +21,12 @@ export async function login(usuario, senha) {
   throw erro
 }
 
-export async function trocarSenha(senha) {
+export async function trocarSenha(senha, confirmarSenha) {
   const resposta = await fetch(`${BASE}/admin/trocar-senha`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ senha }),
+    body: JSON.stringify({ senha, confirmarSenha }),
   })
 
   if (resposta.ok) return
@@ -34,7 +34,12 @@ export async function trocarSenha(senha) {
   let mensagem = 'Não foi possível trocar a senha. Tente novamente.'
   try {
     const corpo = await resposta.json()
-    mensagem = corpo.mensagem || corpo.message || mensagem
+    const mensagemCampo = corpo?.senha || corpo?.confirmarSenha || corpo?.mensagem || corpo?.message
+    if (Array.isArray(mensagemCampo)) {
+      mensagem = mensagemCampo.join(' ')
+    } else if (mensagemCampo) {
+      mensagem = mensagemCampo
+    }
   } catch {
     // Mantém a mensagem padrão quando o backend não retorna JSON.
   }

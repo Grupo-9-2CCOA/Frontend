@@ -138,6 +138,34 @@
   overflow-x: auto;
 }
 
+.pedidos-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 16px 12px;
+  border-top: 1px solid rgba(122, 41, 71, 0.12);
+  color: #4d341f;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pedidos-paginacao button {
+  padding: 8px 14px;
+  border: 1px solid #7a2947;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a2947;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pedidos-paginacao button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .pedidos-tabela {
   width: 100%;
   min-width: 720px;

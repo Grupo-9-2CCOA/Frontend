@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DefaultButton } from '../assets/components/DefaultButton'
+import Sidebar from '../components/Sidebar'
 import { trocarSenha } from '../services/authService'
 
 import '../App.css'
 
-function TrocaSenha() {
+function TrocaSenha({ modo = 'primeiro-acesso' }) {
   const [senha, setSenha] = useState('')
   const [confirmacao, setConfirmacao] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
   const navigate = useNavigate()
+  const eConfiguracao = modo === 'configuracao'
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -30,13 +32,84 @@ function TrocaSenha() {
     setCarregando(true)
 
     try {
-      await trocarSenha(senha)
-      navigate('/pedidos')
+      await trocarSenha(senha, confirmacao)
+      navigate('/pedidos', { replace: true })
     } catch (error) {
       setErro(error.message)
     } finally {
       setCarregando(false)
     }
+  }
+
+  const conteudo = (
+    <>
+      <div className='form-content'>
+        <p className='welcome-text'>{eConfiguracao ? 'Atualize sua senha' : 'Crie sua nova senha'}</p>
+        <p className='description-text'>
+          {eConfiguracao ? 'Defina uma nova senha para acessar sua conta.' : 'Escolha uma senha para acessar sua conta'}
+        </p>
+
+        <form className='form-padding' onSubmit={handleSubmit} aria-busy={carregando}>
+          <div className='form-field-component'>
+            <label className='form-field' htmlFor='nova-senha'>Nova senha</label>
+            <input
+              id='nova-senha'
+              type='password'
+              placeholder='••••••••'
+              className='input'
+              value={senha}
+              onChange={(event) => setSenha(event.target.value)}
+              autoComplete='new-password'
+              minLength='6'
+              maxLength='20'
+              required
+            />
+          </div>
+
+          <p className='password-hint'>Use entre 6 e 20 caracteres.</p>
+
+          <div className='form-field-component'>
+            <label className='form-field' htmlFor='confirmacao-senha'>Confirmar nova senha</label>
+            <input
+              id='confirmacao-senha'
+              type='password'
+              placeholder='••••••••'
+              className='input'
+              value={confirmacao}
+              onChange={(event) => setConfirmacao(event.target.value)}
+              autoComplete='new-password'
+              minLength='6'
+              maxLength='20'
+              required
+            />
+          </div>
+
+          {erro && <p className='login-error' role='alert'>{erro}</p>}
+
+          <DefaultButton loading={carregando} disabled={carregando}>
+            {carregando ? 'Salvando...' : eConfiguracao ? 'Salvar senha' : 'Salvar nova senha'}
+          </DefaultButton>
+        </form>
+      </div>
+    </>
+  )
+
+  if (eConfiguracao) {
+    return (
+      <div className='page-layout'>
+        <Sidebar active='senha' />
+        <main className='page-main'>
+          <div className='page-header'>
+            <h1 className='page-title'>Senha</h1>
+          </div>
+
+          <section className='form-section'>
+            <h3>Alterar senha</h3>
+            {conteudo}
+          </section>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -47,52 +120,7 @@ function TrocaSenha() {
           <p className='title'>Doces com Amor</p>
         </div>
 
-        <div className='form-content'>
-          <p className='welcome-text'>Crie sua nova senha</p>
-          <p className='description-text'>Escolha uma senha para acessar sua conta</p>
-
-          <form className='form-padding' onSubmit={handleSubmit} aria-busy={carregando}>
-            <div className='form-field-component'>
-              <label className='form-field' htmlFor='nova-senha'>Nova senha</label>
-              <input
-                id='nova-senha'
-                type='password'
-                placeholder='••••••••'
-                className='input'
-                value={senha}
-                onChange={(event) => setSenha(event.target.value)}
-                autoComplete='new-password'
-                minLength='6'
-                maxLength='20'
-                required
-              />
-            </div>
-
-            <p className='password-hint'>Use entre 6 e 20 caracteres.</p>
-
-            <div className='form-field-component'>
-              <label className='form-field' htmlFor='confirmacao-senha'>Confirmar nova senha</label>
-              <input
-                id='confirmacao-senha'
-                type='password'
-                placeholder='••••••••'
-                className='input'
-                value={confirmacao}
-                onChange={(event) => setConfirmacao(event.target.value)}
-                autoComplete='new-password'
-                minLength='6'
-                maxLength='20'
-                required
-              />
-            </div>
-
-            {erro && <p className='login-error' role='alert'>{erro}</p>}
-
-            <DefaultButton loading={carregando} disabled={carregando}>
-              {carregando ? 'Salvando...' : 'Salvar nova senha'}
-            </DefaultButton>
-          </form>
-        </div>
+        {conteudo}
       </div>
     </div>
   )

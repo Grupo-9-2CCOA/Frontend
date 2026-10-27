@@ -1,17 +1,68 @@
 const BASE = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+const TAMANHO_PAGINA_PADRAO = 10;
 
-export async function listClientes() {
-  const res = await fetch(`${BASE}/clientes`, { credentials: 'include' });
-  if (res.status === 204) return [];
-  if (!res.ok) throw new Error(`Erro ao listar clientes: ${res.status}`);
-  return res.json();
+function paginaVazia(pagina = 0, tamanho = TAMANHO_PAGINA_PADRAO) {
+  return {
+    clientes: [],
+    content: [],
+    page: Number.isFinite(Number(pagina)) ? Number(pagina) : 0,
+    size: Number.isFinite(Number(tamanho)) && Number(tamanho) > 0 ? Number(tamanho) : TAMANHO_PAGINA_PADRAO,
+    totalPages: 1,
+    totalElements: 0,
+  };
 }
 
-export async function listClientesInativos() {
-  const res = await fetch(`${BASE}/clientes/inativos`, { credentials: 'include' });
-  if (res.status === 204) return [];
+function normalizarPaginaClientes(dados) {
+  const content = Array.isArray(dados?.content) ? dados.content : Array.isArray(dados) ? dados : [];
+  const page = Number(dados?.number ?? dados?.page ?? 0);
+  const size = Number(dados?.size ?? dados?.pageSize ?? TAMANHO_PAGINA_PADRAO);
+  const totalPages = Number(dados?.totalPages ?? 1);
+  const totalElements = Number(dados?.totalElements ?? content.length);
+
+  return {
+    clientes: content,
+    content,
+    page: Number.isFinite(page) ? page : 0,
+    size: Number.isFinite(size) && size > 0 ? size : TAMANHO_PAGINA_PADRAO,
+    totalPages: Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1,
+    totalElements: Number.isFinite(totalElements) ? totalElements : content.length,
+  };
+}
+
+function normalizarListaClientes(dados) {
+  if (Array.isArray(dados)) return dados;
+  if (Array.isArray(dados?.content)) return dados.content;
+  if (Array.isArray(dados?.clientes)) return dados.clientes;
+  if (Array.isArray(dados?.data)) return dados.data;
+  return [];
+}
+
+export async function listClientes(pagina = 0, tamanho = TAMANHO_PAGINA_PADRAO) {
+  const parametros = new URLSearchParams({
+    page: String(pagina),
+    size: String(tamanho),
+    sort: 'nome,asc',
+  });
+
+  const res = await fetch(`${BASE}/clientes?${parametros}`, { credentials: 'include' });
+  if (res.status === 204) return paginaVazia(pagina, tamanho);
+  if (!res.ok) throw new Error(`Erro ao listar clientes: ${res.status}`);
+  const dados = await res.json();
+  return normalizarPaginaClientes(dados);
+}
+
+export async function listClientesInativos(pagina = 0, tamanho = TAMANHO_PAGINA_PADRAO) {
+  const parametros = new URLSearchParams({
+    page: String(pagina),
+    size: String(tamanho),
+    sort: 'nome,asc',
+  });
+
+  const res = await fetch(`${BASE}/clientes/inativos?${parametros}`, { credentials: 'include' });
+  if (res.status === 204) return paginaVazia(pagina, tamanho);
   if (!res.ok) throw new Error(`Erro ao listar clientes inativos: ${res.status}`);
-  return res.json();
+  const dados = await res.json();
+  return normalizarPaginaClientes(dados);
 }
 
 export async function getCliente(id) {
@@ -66,13 +117,20 @@ function _normalizeEndereco(en) {
   return en;
 }
 
+function normalizarListaEnderecos(dados) {
+  if (Array.isArray(dados)) return dados;
+  if (Array.isArray(dados?.content)) return dados.content;
+  if (Array.isArray(dados?.enderecos)) return dados.enderecos;
+  if (Array.isArray(dados?.data)) return dados.data;
+  return [];
+}
+
 export async function listEnderecosPorCliente(clienteId) {
   const res = await fetch(`${BASE}/enderecos/${clienteId}`, { credentials: 'include' });
   if (res.status === 204) return [];
   if (!res.ok) throw new Error(`Erro ao listar endereços: ${res.status}`);
   const data = await res.json();
-  if (!Array.isArray(data)) return data;
-  return data.map(_normalizeEndereco);
+  return normalizarListaEnderecos(data).map(_normalizeEndereco);
 }
 
 export async function createEndereco(clienteId, payload) {
